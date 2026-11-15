@@ -28,7 +28,7 @@ header a.nav{font-size:14px;text-decoration:none}header a.nav:hover{color:var(--
 /* ---------- เลย์เอาต์: ใบเสร็จ (ซ้าย) | QR / Card (ขวา) ----------
    มือถือ/จอแคบ = เรียงลง: ใบเสร็จ → ช่องชำระเงิน → ปุ่ม
    จอกว้าง (>=900px) = ช่องชำระเงินไปอยู่ด้านขวาของใบเสร็จ */
-.layout{--w:min(560px,100vw - 32px);--up:calc(var(--w) * var(--pull) * -1);
+.layout{--w:min(500px,100vw - 32px);--up:calc(var(--w) * var(--pull) * -1);
   display:grid;grid-template-columns:var(--w);justify-content:center;column-gap:32px;
   grid-template-areas:"receipt" "side" "actions";margin:18px auto 60px}
 .stage{grid-area:receipt;width:100%;container-type:inline-size;position:relative}
