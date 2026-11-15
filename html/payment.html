@@ -28,7 +28,7 @@ header a.nav{font-size:14px;text-decoration:none}header a.nav:hover{color:var(--
 /* ---------- เลย์เอาต์: ใบเสร็จ (ซ้าย) | QR / Card (ขวา) ----------
    มือถือ/จอแคบ = เรียงลง: ใบเสร็จ → ช่องชำระเงิน → ปุ่ม
    จอกว้าง (>=900px) = ช่องชำระเงินไปอยู่ด้านขวาของใบเสร็จ */
-.layout{--w:min(420px,100vw - 32px);--up:calc(var(--w) * var(--pull) * -1);
+.layout{--w:min(560px,100vw - 32px);--up:calc(var(--w) * var(--pull) * -1);
   display:grid;grid-template-columns:var(--w);justify-content:center;column-gap:32px;
   grid-template-areas:"receipt" "side" "actions";margin:18px auto 60px}
 .stage{grid-area:receipt;width:100%;container-type:inline-size;position:relative}
@@ -251,9 +251,9 @@ header a.nav{font-size:14px;text-decoration:none}header a.nav:hover{color:var(--
 
   function fit() {
     // ย่อตัวอักษรอัตโนมัติจนข้อความพอดีกับพื้นที่ว่างบนใบเสร็จ
-    var d = $('data'), fs = 2.7;
+    var d = $('data'), fs = 3.2;
     d.style.fontSize = fs + 'cqw';
-    while (d.scrollHeight > d.clientHeight + 1 && fs > 1.5) { fs -= 0.1; d.style.fontSize = fs.toFixed(1) + 'cqw'; }
+    while (d.scrollHeight > d.clientHeight + 1 && fs > 2.2) { fs -= 0.1; d.style.fontSize = fs.toFixed(1) + 'cqw'; }
   }
 
   // QR พร้อมเพย์ขนาดเล็กบนใบเสร็จ
