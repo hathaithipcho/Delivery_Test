@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate your rider · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Thai:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3a3532;--pink:#d9327f;--soft:#cf6f96;--bg:#f8e7ee;--muted:#8a7f86;--line:#cfc9ce;--ok:#4e7a5a;--err:#b4475f;--silver:#a9afbd;--star:#e0a526}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Playfair Display","Noto Serif Thai",Georgia,serif;font-weight:400;line-height:1.55;
+ background:url("../images/bg2.png") center/cover fixed no-repeat,var(--bg)}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:18px 24px}
+.logo{text-decoration:none;font-size:30px;font-weight:500;line-height:1;letter-spacing:.02em;
+  color:#9aa4b8;background:linear-gradient(100deg,#8a94aa 0%,#dde2ec 28%,#98a2b6 52%,#e3e7f0 76%,#8a94aa 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 0 rgba(110,120,140,.35))}
+.logo b{font-weight:500}
+header a.nav{font-size:13px;letter-spacing:.06em;text-decoration:none;color:var(--muted)}header a.nav:hover{color:var(--pink)}
+
+.wrap{width:min(480px,calc(100% - 32px));margin:6px auto 70px}
+.msg{min-height:1.5em;font-size:14px;margin:0 0 10px;text-align:center}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+
+.hero{text-align:center;margin:18px 0 44px}
+.oval{display:inline-block;padding:5px 26px;border:1px solid var(--line);border-radius:50%;outline:1px solid var(--line);outline-offset:3px;
+  font-family:ui-monospace,"Courier New",Consolas,monospace;font-size:12.5px;letter-spacing:.08em;color:var(--muted);background:rgba(255,255,255,.5)}
+.hero h1{margin:26px 0 0;font-weight:400;font-size:30px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase}
+.hero .sub{margin:4px 0 0;font-style:italic;font-size:20px;color:#a99ba3;line-height:1.3}
+.hero .sub small{display:block;margin-top:2px;font-style:normal;font-size:13px;letter-spacing:.04em;color:var(--muted)}
+
+.frame{position:relative;background:rgba(255,255,255,.92);border:1px solid var(--line);padding:30px 22px 22px;margin:0 0 42px}
+.num{position:absolute;top:-19px;left:50%;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;background:#fff;border:1px solid var(--line);font-size:12.5px;letter-spacing:.06em;color:#6b6b72}
+.cap{margin:0 0 12px;text-align:center;font-size:11.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+
+.rider{display:flex;align-items:center;justify-content:center;gap:16px}
+.av{flex:none;position:relative;width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:#fff;
+  display:grid;place-items:center;overflow:hidden;font-size:22px;color:var(--muted)}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rider .nm{margin:0;font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.rider .ph{margin:1px 0 0;font-size:14px;color:var(--muted)}
+
+/* ดาว */
+.stars{display:flex;justify-content:center;gap:6px;margin:6px 0 2px}
+.st{border:0;background:none;padding:2px 4px;font-size:44px;line-height:1;color:#d9d3d7;cursor:pointer;transition:transform .15s,color .15s}
+.st.on{color:var(--star)}
+.st:hover{transform:scale(1.12)}
+.st:focus-visible{outline:2px solid var(--pink);outline-offset:2px;border-radius:8px}
+.stars.ro .st{cursor:default}.stars.ro .st:hover{transform:none}
+.lbl{min-height:1.6em;margin:0 0 14px;text-align:center;font-style:italic;font-size:17px;color:var(--soft)}
+.cm{display:block;margin:0 0 6px;font-size:12px;letter-spacing:.08em;color:var(--muted)}
+textarea{width:100%;font:inherit;font-size:15px;color:var(--ink);padding:11px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;resize:vertical;min-height:96px}
+textarea:focus{outline:2px solid var(--pink);outline-offset:1px;border-color:transparent}
+.count{margin:4px 0 16px;text-align:right;font-size:12px;color:var(--muted)}
+.done-c{margin:10px 0 0;text-align:center;font-size:15px;overflow-wrap:anywhere}
+.done-c.none{color:var(--muted)}
+
+.btn{display:block;width:100%;font:inherit;font-size:16px;letter-spacing:.06em;padding:12px;border-radius:24px;text-align:center;
+  border:1px solid var(--silver);color:#b0205f;cursor:pointer;text-decoration:none;margin-bottom:14px;
+  background:linear-gradient(180deg,#ffffff 0%,#eceef3 42%,#cfd3dc 58%,#e6e9ef 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,.85);
+  box-shadow:0 10px 18px rgba(120,50,90,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3);
+  transition:filter .2s,box-shadow .2s,transform .2s}
+.btn:hover{filter:brightness(1.04)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.alt{color:#3a3f4a}
+
+@media print{body{background:#fff}header,.btn{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">Deli<b>very</b></a>
+  <a class="nav" href="customer.html#orders">← Back to my orders</a>
+</header>
+
+<main class="wrap">
+  <p class="msg" id="msg" role="status"></p>
+
+  <div id="view" hidden>
+    <div class="hero">
+      <span class="oval" id="trk">—</span>
+      <h1>Rate rider</h1>
+      <p class="sub">How was your delivery?<small>ให้คะแนนไรเดอร์</small></p>
+    </div>
+
+    <section class="frame">
+      <span class="num">01</span>
+      <p class="cap">Rider · ไรเดอร์</p>
+      <div class="rider">
+        <div class="av"><span id="avfb">·</span><img src="../images/rider.png" alt="" onerror="this.style.display='none'"></div>
+        <div>
+          <p class="nm" id="rname">—</p>
+          <p class="ph" id="rphone"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="frame" id="box">
+      <span class="num">02</span>
+      <p class="cap">Your rating · ให้คะแนน</p>
+      <div class="stars" id="stars" role="radiogroup" aria-label="Rating from 1 to 5 stars"></div>
+      <p class="lbl" id="lbl">Tap a star · แตะดาวเพื่อให้คะแนน</p>
+
+      <div id="formPart">
+        <label class="cm" for="cmt">Comment (optional) · ความเห็นเพิ่มเติม</label>
+        <textarea id="cmt" maxlength="500" placeholder="เช่น ส่งตรงเวลา สุภาพ · e.g. on time and polite"></textarea>
+        <p class="count"><span id="cnt">0</span>/500</p>
+        <button class="btn" id="send" type="button">Submit rating · ส่งคะแนน</button>
+      </div>
+
+      <p class="done-c" id="doneC" hidden></p>
+    </section>
+
+    <a class="btn alt" id="back" href="#">← Back to tracking · กลับไปหน้าติดตามพัสดุ</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var API = '../api/parcel.php';
+  var id = new URLSearchParams(location.search).get('id');
+  var $ = function (i) { return document.getElementById(i); };
+  function say(t, c) { $('msg').className = 'msg ' + (c || ''); $('msg').textContent = t; }
+  function readJson(r) {
+    return r.text().then(function (t) {
+      try { return JSON.parse(t); } catch (e) { return { error: 'Server error (HTTP ' + r.status + '). Open this page via http://localhost:8000 (PHP server), not Live Server.' }; }
+    });
+  }
+  var LABELS = ['', 'Poor · ควรปรับปรุง', 'Fair · พอใช้', 'Good · ดี', 'Very good · ดีมาก', 'Excellent · ยอดเยี่ยม'];
+  var value = 0, locked = false;
+
+  /* ---------- ดาว ---------- */
+  var starsEl = $('stars');
+  for (var i = 1; i <= 5; i++) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'st'; b.textContent = '★';
+    b.dataset.v = i; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', 'false');
+    b.setAttribute('aria-label', i + (i === 1 ? ' star' : ' stars'));
+    starsEl.appendChild(b);
+  }
+  var btns = starsEl.querySelectorAll('.st');
+  function paint(n) {
+    btns.forEach(function (b) {
+      var v = +b.dataset.v;
+      b.classList.toggle('on', v <= n);
+      b.setAttribute('aria-checked', String(v === value));
+    });
+    $('lbl').textContent = n ? LABELS[n] : 'Tap a star · แตะดาวเพื่อให้คะแนน';
+  }
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () { if (locked) return; value = +b.dataset.v; paint(value); });
+    b.addEventListener('mouseenter', function () { if (!locked) paint(+b.dataset.v); });
+    b.addEventListener('focus', function () { if (!locked && !value) paint(+b.dataset.v); });
+  });
+  starsEl.addEventListener('mouseleave', function () { if (!locked) paint(value); });
+
+  $('cmt').addEventListener('input', function () { $('cnt').textContent = this.value.length; });
+
+  function trackUrl() { return 'tracking.html?id=' + encodeURIComponent(id); }
+
+  /* แสดงผลแบบอ่านอย่างเดียวหลังให้คะแนนแล้ว */
+  function showDone(star, comment) {
+    locked = true; value = star;
+    starsEl.classList.add('ro');
+    btns.forEach(function (b) { b.disabled = true; });
+    paint(star);
+    $('formPart').hidden = true;
+    var c = $('doneC');
+    c.hidden = false;
+    c.className = 'done-c' + (comment ? '' : ' none');
+    c.textContent = comment ? '“' + comment + '”' : 'No comment · ไม่มีความเห็น';
+  }
+
+  function render(o) {
+    $('trk').textContent = o.tracking_no || ('#' + id);
+    var name = o.rider_name || '';
+    $('rname').textContent = name || '—';
+    $('avfb').textContent = name ? Array.from(name.trim())[0].toUpperCase() : '·';
+    $('rphone').textContent = o.rider_phone || '';
+    $('back').href = trackUrl();
+    $('view').hidden = false;
+
+    if (o.rating) { showDone(o.rating.star, o.rating.comment); say('You already rated this delivery. Thank you! · คุณให้คะแนนแล้ว ขอบคุณค่ะ', 'ok'); return; }
+    if (o.status !== 'delivered') {
+      $('box').hidden = true;
+      say('You can rate once the parcel is delivered · ให้คะแนนได้หลังพัสดุถึงที่หมายแล้ว');
+      return;
+    }
+    if (!o.rider_id) {
+      $('box').hidden = true;
+      say('Rider information not found for this parcel · ไม่พบข้อมูลไรเดอร์ของพัสดุนี้', 'err');
+      return;
+    }
+  }
+
+  if (!id) { say('Missing order id (?id=...).', 'err'); return; }
+  fetch(API + '?a=order&id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+    .then(readJson)
+    .then(function (j) {
+      if (j.error) {
+        say(j.error, 'err');
+        if (j.login) setTimeout(function () { location.href = 'login.html?role=customer'; }, 1200);
+        return;
+      }
+      render(j.order);
+    })
+    .catch(function () { say('Can’t reach the server.', 'err'); });
+
+  $('send').addEventListener('click', function () {
+    if (!value) { say('Please choose a star rating · กรุณาเลือกจำนวนดาว', 'err'); return; }
+    var btn = $('send'), comment = $('cmt').value.trim();
+    btn.disabled = true; say('Sending…');
+    fetch(API + '?a=rate', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parcel_id: +id, star: value, comment: comment })
+    }).then(readJson).then(function (j) {
+      if (j.error) { say(j.error, 'err'); btn.disabled = false; return; }
+      showDone(value, comment);
+      say('Thank you for your rating! · ขอบคุณสำหรับคะแนน', 'ok');
+      setTimeout(function () { location.href = trackUrl(); }, 1800);
+    }).catch(function () { say('Can’t reach the server.', 'err'); btn.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Delivery System: choose your service as a Rider or Customer.">
+<title>Delivery System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add("js")</script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* เหลือการ์ด 2 ใบ -> จัดกึ่งกลางหน้า */
+@media (min-width:900px){
+  #services .grid{display:grid;grid-template-columns:repeat(2,minmax(0,420px));justify-content:center;margin-left:auto;margin-right:auto}
+}
+</style>
+</head>
+<body>
+
+<header id="top">
+  <a class="logo" href="#hero">Delivery</a>
+  <nav aria-label="Main navigation">
+    <a href="#hero">Home</a>
+    <a href="#services">Services</a>
+    <a href="#footer">Contact</a>
+  </nav>
+  <a class="signin" id="authLink" href="login.html">Sign in</a>
+</header>
+
+<!-- ===== PAGE 1 : HERO ===== -->
+<section id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+
+  <div class="scene" aria-hidden="true">
+    <div class="stage">
+      <div class="layer map-path"><img src="../images/line_map.png" class="draw" alt="" draggable="false" decoding="async"></div>
+      <div class="ripple"></div>
+      <img src="../images/line_map.png" class="layer pin" alt="" draggable="false" decoding="async">
+
+      <img src="../images/delivery.png" class="layer t-delivery" alt="" draggable="false" decoding="async">
+      <img src="../images/system.png" class="layer t-system" alt="" draggable="false" decoding="async">
+
+      <i class="spark" style="left:12.5%;top:19%;--d:3.2s;--z:1.6"></i>
+      <i class="spark" style="left:31%;top:12.5%;--d:4.3s;--z:1.1"></i>
+      <i class="spark" style="left:48.5%;top:18%;--d:3.7s;--z:1.5"></i>
+      <i class="spark" style="left:56%;top:36%;--d:5s;--z:1.2"></i>
+      <i class="spark" style="left:30%;top:47%;--d:4.6s;--z:1.4"></i>
+
+      <img src="../images/chef.png" class="layer chef" alt="" draggable="false" decoding="async">
+    </div>
+  </div>
+
+  <div class="road" aria-hidden="true">
+    <img src="../images/truck.png" class="truck" alt="" decoding="async" onerror="this.style.display='none'">
+  </div>
+
+  <div class="hero-content">
+    <h1 class="sr">Delivery System</h1>
+    <a class="hero-btn" href="#services">Choose your service</a>
+  </div>
+</section>
+
+<!-- ===== PAGE 2 : CHOOSE SERVICE ===== -->
+<main id="services">
+  <div class="title reveal">
+    <h2>Choose your service</h2>
+    <span>Select how you would like to continue</span>
+  </div>
+
+  <div class="grid">
+    <article class="card reveal" style="--i:0">
+      <div class="slot"><img src="../images/rider.png" alt="Rider" loading="lazy" decoding="async" onerror="this.style.display='none'"></div>
+      <div class="orn"><i></i>❦<i></i></div>
+      <div class="name">Rider</div>
+      <div class="desc">Accept deliveries and track your earnings.</div>
+      <a class="go" href="login.html?role=rider" data-role="rider" data-dest="rider.html">Continue as Rider</a>
+    </article>
+
+    <article class="card reveal" style="--i:1">
+      <span class="tag">POPULAR</span>
+      <div class="slot"><img src="../images/customer.png" alt="Customer" loading="lazy" decoding="async" onerror="this.style.display='none'"></div>
+      <div class="orn"><i></i>❦<i></i></div>
+      <div class="name">Customer</div>
+      <div class="desc">Send parcels and follow them in real time.</div>
+      <a class="go" href="login.html?role=customer" data-role="customer" data-dest="customer.html">Continue as Customer</a>
+    </article>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="fcols reveal">
+    <div><h4>May we help you?</h4><a href="#">Contact us</a><a href="#">FAQ’s</a></div>
+    <div><h4>Information</h4><a href="#">Terms &amp; Conditions</a><a href="#">Privacy Policy</a><a href="#">Cookie Policy</a></div>
+    <div><h4>The company</h4><a href="#">About us</a><a href="#">Careers</a><a href="#">Accessibility</a></div>
+    <div><h4>Follow us</h4><a href="#">Facebook</a><a href="#">Instagram</a><a href="#">Twitter</a></div>
+    <div><h4>Sign up for updates</h4><p>By entering your email address you consent to receiving our newsletter.</p><div class="mail">Enter email address</div></div>
+  </div>
+</footer>
+
+<script src="../js/script.js"></script>
+<script>
+/* Service cards: signed in with the right account -> go straight there; otherwise -> login.html */
+document.querySelectorAll('[data-dest]').forEach(function (a) {
+  a.addEventListener('click', async function (e) {
+    e.preventDefault();
+    var ok = false;
+    try {
+      var r = await fetch('../api/api.php?a=me', { credentials: 'same-origin' }).then(function (x) { return x.json(); });
+      ok = !r.guest && r.role === a.dataset.role;
+    } catch (_) {}
+    location.href = ok ? a.dataset.dest : a.getAttribute('href');
+  });
+});
+
+/* Header: Sign in -> Sign out when logged in */
+(function () {
+  var link = document.getElementById('authLink');
+  fetch('../api/api.php?a=me', { credentials: 'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (!r || r.guest) return;
+      link.textContent = 'Sign out';
+      link.href = '#';
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        fetch('../api/api.php?a=logout', { credentials: 'same-origin' })
+          .finally(function () { location.reload(); });
+      });
+    })
+    .catch(function () {});
+})();
+</script>
+</body>
+</html>

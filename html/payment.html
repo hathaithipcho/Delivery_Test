@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3a3532;--pink:#d9327f;--bg:#f8e7ee;--muted:#8a7f86;--ok:#4e7a5a;--err:#b4475f;
+  /* ดึงปุ่มให้ขึ้นมาใกล้ใบเสร็จ (สัดส่วนของความกว้างใบเสร็จ): เพิ่มค่า = ปุ่มสูงขึ้น, ลดค่า = ปุ่มต่ำลง */
+  --pull:.45}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Playfair Display","Noto Serif Thai",Georgia,serif;line-height:1.5;
+ background:url("../images/bg2.png") center/cover fixed no-repeat,var(--bg)}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:18px 24px}
+.logo{text-decoration:none;font-size:30px;font-weight:500;line-height:1;letter-spacing:.02em;
+  color:#9aa4b8;background:linear-gradient(100deg,#8a94aa 0%,#dde2ec 28%,#98a2b6 52%,#e3e7f0 76%,#8a94aa 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 0 rgba(110,120,140,.35))}
+.logo b{font-weight:500}
+header a.nav{font-size:14px;text-decoration:none}header a.nav:hover{color:var(--pink)}
+
+/* ---------- เลย์เอาต์: ใบเสร็จ (ซ้าย) | QR / Card (ขวา) ----------
+   มือถือ/จอแคบ = เรียงลง: ใบเสร็จ → ช่องชำระเงิน → ปุ่ม
+   จอกว้าง (>=900px) = ช่องชำระเงินไปอยู่ด้านขวาของใบเสร็จ */
+.layout{--w:min(420px,100vw - 32px);--up:calc(var(--w) * var(--pull) * -1);
+  display:grid;grid-template-columns:var(--w);justify-content:center;column-gap:32px;
+  grid-template-areas:"receipt" "side" "actions";margin:18px auto 60px}
+.stage{grid-area:receipt;width:100%;container-type:inline-size;position:relative}
+.side{grid-area:side;align-self:start;margin-top:var(--up)}
+.actions{grid-area:actions;position:relative;z-index:1;margin-top:14px;text-align:center}
+/* ไม่มีช่องชำระเงิน (เช่น Cash หรือจ่ายแล้ว) -> ปุ่มชิดใบเสร็จเหมือนเดิม */
+.layout.solo .actions{margin-top:var(--up)}
+@media (min-width:900px){
+  .layout:not(.solo){grid-template-columns:var(--w) var(--w);
+    grid-template-areas:"receipt side" "actions ."}
+  .layout:not(.solo) .side{align-self:center;margin-top:var(--up)}
+  .layout:not(.solo) .actions{margin-top:var(--up)}
+}
+
+/* ความสูงของ .stage ต้องเท่ารูปเต็ม ๆ เพราะข้อความบนใบเสร็จ (.data) วางตำแหน่งเป็น % ของความสูงนี้ */
+.receipt{display:block;width:100%;height:auto;pointer-events:none;
+  filter:drop-shadow(0 10px 18px rgba(120,50,90,.18))}
+
+/* ข้อความที่ซ้อนบนพื้นที่ว่างกลางใบเสร็จ — ปรับ top/left/right/bottom ได้ถ้าไม่ตรงกับรูปของคุณ */
+.data{position:absolute;left:16.5%;right:16.5%;top:24.5%;bottom:39%;overflow:hidden;
+  font-family:ui-monospace,"Courier New",Consolas,"Noto Serif Thai",monospace;font-size:2.7cqw;line-height:1.45;color:#2b2b2b}
+.data .r{display:flex;justify-content:space-between;gap:1.6cqw}
+.data .r span{color:#6b6b6b;flex:none}
+.data .r em{font-style:normal;text-align:right;overflow-wrap:anywhere}
+.data hr{border:0;border-top:1px dashed #777;margin:.5em 0}
+.data .tot{font-size:1.3em;font-weight:700}
+.data .st{font-weight:700;letter-spacing:.06em}
+.data .st.paid{color:var(--ok)}.data .st.pending{color:var(--err)}
+/* ข้อความเงินสดที่ต่อจากแถว PAYMENT */
+.data .note{margin-top:.35em;padding-top:.35em;border-top:1px dashed #999;font-size:.88em;line-height:1.4;color:#444}
+.data .note b{font-size:1.15em}
+
+/* QR พร้อมเพย์ขนาดเล็กบนใบเสร็จ (ใต้แถว PAYMENT) — กดที่ QR เพื่อขยาย */
+.data.hasqr{bottom:36%;display:flex;flex-direction:column;padding-bottom:.6em}
+/* บล็อก QR กินพื้นที่ที่เหลือถึงเส้นดอกจัน แล้วจัดกึ่งกลางให้ช่องไฟบน-ล่างเท่ากัน */
+.data .qrwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.55em;text-align:center}
+.data .qrr{display:inline-block;background:none;padding:0;border:0;line-height:0;cursor:zoom-in;pointer-events:auto;mix-blend-mode:multiply}
+.data .qrr svg{display:block;width:12cqw;height:auto}
+.data .qrcap{font-size:.78em;line-height:1.2;letter-spacing:.08em;color:#555}
+.lb{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(40,20,35,.55);cursor:zoom-out}
+.lb div{background:#fff;padding:16px;border-radius:14px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.lb svg{display:block;width:min(280px,70vw);height:auto}
+.lb p{margin:8px 0 0;font-size:22px;font-weight:600}
+
+.missing{display:none;text-align:center;padding:40px 16px;color:var(--muted);background:#fff;border-radius:8px}
+.missing b{display:block;color:var(--pink);font-weight:500;font-size:18px;margin-bottom:4px}
+
+.msg{min-height:1.5em;font-size:14px;margin:0 0 10px;text-align:center}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+
+/* ปุ่มสีเงิน (โลหะเงา) พร้อมเงาแบบเดียวกับใบเสร็จ */
+.btn{display:block;width:100%;font:inherit;font-size:16px;letter-spacing:.06em;padding:12px;border-radius:24px;
+  border:1px solid #a9afbd;color:#b0205f;cursor:pointer;text-decoration:none;margin-bottom:14px;
+  background:linear-gradient(180deg,#ffffff 0%,#eceef3 42%,#cfd3dc 58%,#e6e9ef 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,.85);
+  box-shadow:0 10px 18px rgba(120,50,90,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3);
+  transition:filter .2s,box-shadow .2s,transform .2s}
+.btn:hover{filter:brightness(1.04);
+  box-shadow:0 12px 22px rgba(120,50,90,.24),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3)}
+.btn:active{transform:translateY(1px);
+  box-shadow:0 5px 10px rgba(120,50,90,.18),inset 0 2px 3px rgba(95,105,125,.35)}
+.btn:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.alt{color:#3a3f4a}
+
+.panel{background:linear-gradient(180deg,#ffffff 0%,#eceef3 42%,#cfd3dc 58%,#e6e9ef 100%);border:1px solid #a9afbd;border-radius:16px;padding:18px 18px 14px;margin:0;text-align:left;
+  /* เงาแบบเดียวกับใบเสร็จ (drop-shadow) + เงาฟุ้งรอบด้านเล็กน้อย */
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3);filter:drop-shadow(0 10px 18px rgba(120,50,90,.22)) drop-shadow(0 0 8px rgba(120,50,90,.1))}
+.panel h2{margin:0 0 2px;font-size:17px;font-weight:600}
+.panel .sub{margin:0 0 12px;font-size:13px;color:#5b6170}
+.panel .hint{margin:8px 0 0;text-align:center;font-size:12.5px;color:#5b6170}
+.panel .amt{margin:10px 0 0;text-align:center;font-size:24px;font-weight:600}
+.qr{display:grid;place-items:center;padding:10px;border:1px solid #ecd3de;border-radius:12px;background:#fff}
+.qr svg{display:block;width:min(220px,100%);height:auto}
+.fld{display:block;margin:0 0 10px}
+.fld span{display:block;margin-bottom:3px;font-size:12.5px;color:#4f5565}
+.fld input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid #e3cdd8;border-radius:10px;background:#fffafc;color:var(--ink)}
+.fld input:focus{outline:2px solid var(--pink);outline-offset:1px;border-color:transparent}
+.fld.bad input{border-color:var(--err);background:#fff5f7}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+@media print{body{background:#fff}header,.actions,.side{display:none}.receipt{filter:none}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">Deli<b>very</b></a>
+  <a class="nav" href="customer.html#orders">← Back to my orders</a>
+</header>
+
+<div class="layout solo" id="layout">
+  <main class="stage">
+    <img class="receipt" src="../images/receipt.png" alt="Receipt"
+         onerror="this.style.display='none';document.getElementById('missing').style.display='block'">
+    <div class="data" id="data"></div>
+    <div class="missing" id="missing"><b>receipt.png not found</b>Put your file at images/receipt.png</div>
+  </main>
+
+  <!-- ด้านขวาของใบเสร็จ: PromptPay (QR) / Card (ฟอร์มบัตร) -->
+  <aside class="side" id="side" hidden>
+    <section class="panel" id="panel" hidden></section>
+  </aside>
+
+  <!-- ใต้ใบเสร็จ: ข้อความสถานะ + ปุ่มทั้งหมด -->
+  <div class="actions">
+    <p class="msg" id="msg" role="status"></p>
+    <button class="btn" id="pay" type="button" hidden>I have paid · ชำระเงินแล้ว</button>
+    <!-- ปุ่มไปหน้าติดตามพัสดุ (โชว์เมื่อจ่ายแล้ว หรือเป็นเงินสด) -->
+    <a class="btn" id="track" href="#" hidden>Track my parcel · ติดตามพัสดุ</a>
+    <a class="btn alt" href="customer.html">Send another parcel</a>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var API = '../api/parcel.php';
+  var id = new URLSearchParams(location.search).get('id');
+  var $ = function (i) { return document.getElementById(i); };
+  var money = function (n) { return '฿' + (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 }); };
+
+  // แสดง/ซ่อนคอลัมน์ขวา ตามว่ามีอะไรให้โชว์ไหม (ถ้าไม่มี ใบเสร็จจะอยู่กลางหน้า)
+  function sync() {
+    var has = !$('panel').hidden;
+    $('side').hidden = !has;
+    $('layout').classList.toggle('solo', !has);
+  }
+  function say(t, c) { $('msg').className = 'msg ' + (c || ''); $('msg').textContent = t; sync(); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function readJson(r) {
+    return r.text().then(function (t) {
+      try { return JSON.parse(t); } catch (e) { return { error: 'Server error (HTTP ' + r.status + '). Open this page via http://localhost:8000 (PHP server), not Live Server.' }; }
+    });
+  }
+  var METHOD = { qr: 'PromptPay', card: 'Card', cash: 'Cash', transfer: 'Transfer' };
+  var order = null;
+
+  /* ---------- ช่องทางชำระเงิน: PromptPay / Card (Cash แสดงบนใบเสร็จ) ---------- */
+  var PROMPTPAY_ID = '0800000000';   // ← เปลี่ยนเป็นเบอร์พร้อมเพย์ 10 หลัก หรือเลขบัตรประชาชน 13 หลักของคุณ
+
+  // สร้างข้อความ QR พร้อมเพย์มาตรฐาน EMVCo (ใส่ยอดเงินตามออเดอร์)
+  function tlv(tag, v) { return tag + ('0' + v.length).slice(-2) + v; }
+  function crc16(str) {
+    var c = 0xFFFF;
+    for (var i = 0; i < str.length; i++) {
+      c ^= str.charCodeAt(i) << 8;
+      for (var j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) : (c << 1);
+      c &= 0xFFFF;
+    }
+    return ('0000' + c.toString(16).toUpperCase()).slice(-4);
+  }
+  function promptpayPayload(target, amount) {
+    var t = String(target).replace(/\D/g, ''), tag = '01';
+    if (t.length >= 15) tag = '03';
+    else if (t.length === 13) tag = '02';
+    else t = '0066' + t.replace(/^0/, '');
+    var acc = tlv('00', 'A000000677010111') + tlv(tag, t);
+    var pl = tlv('00', '01') + tlv('01', '12') + tlv('29', acc) + tlv('53', '764') +
+             tlv('54', Number(amount).toFixed(2)) + tlv('58', 'TH') + '6304';
+    return pl + crc16(pl);
+  }
+  function qrSvg(text, margin) {
+    if (typeof qrcode !== 'function') return '';
+    var q = qrcode(0, 'L'); q.addData(text); q.make();
+    return q.createSvgTag({ cellSize: 4, margin: margin == null ? 2 : margin, scalable: true });
+  }
+
+  // ตรวจรูปแบบบัตรในเบราว์เซอร์เท่านั้น (ไม่เก็บ ไม่ส่งไปเซิร์ฟเวอร์)
+  function luhn(n) {
+    var s = 0, alt = false;
+    for (var i = n.length - 1; i >= 0; i--) { var d = +n.charAt(i); if (alt) { d *= 2; if (d > 9) d -= 9; } s += d; alt = !alt; }
+    return s % 10 === 0;
+  }
+  function flag(id, ok) { $(id).parentNode.classList.toggle('bad', !ok); return ok; }
+  function validCard() {
+    var num = $('cn').value.replace(/\s/g, ''), nm = $('cname').value.trim(), cv = $('ccvv').value;
+    var m = /^(\d{2})\/(\d{2})$/.exec($('cexp').value), expOk = false;
+    if (m) { var mm = +m[1], yy = 2000 + (+m[2]); expOk = mm >= 1 && mm <= 12 && new Date(yy, mm, 1) > new Date(); }
+    var a = flag('cn', /^\d{13,19}$/.test(num) && luhn(num)), b = flag('cname', nm.length > 1),
+        c = flag('cexp', expOk), d = flag('ccvv', /^\d{3,4}$/.test(cv));
+    return a && b && c && d;
+  }
+
+  function renderPanel() {
+    var o = order, p = $('panel'), amt = money(o.amount), h = '';
+    if (o.pay_status === 'paid') { p.hidden = true; p.innerHTML = ''; sync(); return; }
+
+    if (o.method === 'card') {
+      h = '<h2>Card · บัตร</h2>' +
+          '<p class="sub">Enter your card details · กรอกข้อมูลบัตร</p>' +
+          '<label class="fld"><span>Card number · หมายเลขบัตร</span><input id="cn" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="23"></label>' +
+          '<label class="fld"><span>Name on card · ชื่อบนบัตร</span><input id="cname" autocomplete="cc-name" placeholder="SOMCHAI JAIDEE"></label>' +
+          '<div class="row2">' +
+            '<label class="fld"><span>Expiry · วันหมดอายุ</span><input id="cexp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5"></label>' +
+            '<label class="fld"><span>CVV</span><input id="ccvv" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="4"></label>' +
+          '</div>' +
+          '<p class="hint">Demo only: card details are checked in your browser and never stored or sent.</p>';
+    }
+    // method === 'cash' หรือ 'qr' -> ไม่มี panel (เงินสดและ QR อยู่บนใบเสร็จ)
+
+    p.innerHTML = h; p.hidden = !h;
+
+    if (o.method === 'card') {
+      $('cn').addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
+      });
+      $('cexp').addEventListener('input', function () {
+        var d = this.value.replace(/\D/g, '').slice(0, 4);
+        this.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+      });
+      $('ccvv').addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 4); });
+      $('pay').textContent = 'Pay ' + amt + ' · ชำระเงิน';
+    }
+    sync();
+  }
+
+  function trackUrl() { return 'tracking.html?id=' + encodeURIComponent(id); }
+
+  function row(k, v) { return '<div class="r"><span>' + k + '</span><em>' + esc(String(v)) + '</em></div>'; }
+
+  function fit() {
+    // ย่อตัวอักษรอัตโนมัติจนข้อความพอดีกับพื้นที่ว่างบนใบเสร็จ
+    var d = $('data'), fs = 2.7;
+    d.style.fontSize = fs + 'cqw';
+    while (d.scrollHeight > d.clientHeight + 1 && fs > 1.5) { fs -= 0.1; d.style.fontSize = fs.toFixed(1) + 'cqw'; }
+  }
+
+  // QR พร้อมเพย์ขนาดเล็กบนใบเสร็จ
+  function qrBlock(o, paid) {
+    if (o.method !== 'qr' || paid) return '';
+    var svg = qrSvg(promptpayPayload(PROMPTPAY_ID, o.amount), 1);
+    if (!svg) return '<div class="note">QR can’t load. Transfer to PromptPay ' + esc(PROMPTPAY_ID) + '.</div>';
+    return '<div class="qrwrap"><div class="qrr" id="qrr" title="Tap to enlarge">' + svg + '</div>' +
+           '<div class="qrcap">SCAN TO PAY</div></div>';
+  }
+
+  function render() {
+    var o = order, paid = o.pay_status === 'paid';
+    var status = paid ? 'PAID' : (o.method === 'cash' ? 'PAY ON DELIVERY' : 'UNPAID');
+    $('data').innerHTML =
+      row('TRACKING', o.tracking_no) +
+      row('RECEIVER', o.receiver_name) +
+      row('DATE', o.created_at || '-') +
+      '<hr>' +
+      row('FROM', o.pickup_address) +
+      row('TO', o.dropoff_address) +
+      '<hr>' +
+      row('SIZE / DIST.', o.size + ' · ' + o.distance_km + ' km') +
+      '<hr>' +
+      row('BASE FEE', money(o.base_fee)) +
+      row('DIST. FEE', money(o.distance_fee)) +
+      '<div class="r tot"><span>TOTAL</span><em>' + money(o.amount) + '</em></div>' +
+      '<hr>' +
+      '<div class="r"><span>PAYMENT</span><em>' + esc(METHOD[o.method] || o.method) + ' · <b class="st ' + (paid ? 'paid' : 'pending') + '">' + status + '</b></em></div>' +
+      // เงินสด: ต่อท้ายแถว PAYMENT บนใบเสร็จ
+      ((o.method === 'cash' && !paid)
+        ? '<div class="note">Pay the rider in cash on delivery · ชำระเงินสดกับผู้ส่งเมื่อส่งพัสดุ<br>' +
+          'Please prepare <b>' + money(o.amount) + '</b> in cash.<br>เตรียมเงินสดให้พอดีกับยอดชำระ</div>'
+        : '') +
+      qrBlock(o, paid);
+    $('data').classList.toggle('hasqr', o.method === 'qr' && !paid);
+    var qb = $('qrr');
+    if (qb) qb.addEventListener('click', function () {
+      var lb = document.createElement('div'); lb.className = 'lb';
+      lb.innerHTML = '<div>' + qrSvg(promptpayPayload(PROMPTPAY_ID, o.amount), 2) + '<p>' + money(o.amount) + '</p></div>';
+      lb.addEventListener('click', function () { lb.remove(); });
+      document.body.appendChild(lb);
+    });
+    fit();
+    $('pay').hidden = paid || o.method === 'cash';
+    // จ่ายแล้ว (หรือเงินสด) -> แสดงปุ่มไปหน้าติดตาม
+    $('track').hidden = !(paid || o.method === 'cash');
+    $('track').href = trackUrl();
+    sync();
+  }
+
+  if (!id) { say('Missing order id (?id=...).', 'err'); return; }
+  fetch(API + '?a=order&id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+    .then(readJson)
+    .then(function (j) {
+      if (j.error) {
+        say(j.error, 'err');
+        if (j.login) setTimeout(function () { location.href = 'login.html?role=customer'; }, 1200);
+        return;
+      }
+      order = j.order; render(); renderPanel();
+    })
+    .catch(function () { say('Can’t reach the server.', 'err'); });
+
+  $('pay').addEventListener('click', function () {
+    if (order && order.method === 'card' && !validCard()) { say('Please check your card details.', 'err'); return; }
+    var b = $('pay'); b.disabled = true; say('Confirming…');
+    fetch(API + '?a=pay', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parcel_id: +id })
+    }).then(readJson).then(function (j) {
+      if (j.error) { say(j.error, 'err'); b.disabled = false; return; }
+      order.pay_status = 'paid';
+      $('panel').hidden = true; $('panel').innerHTML = '';
+      say('Payment confirmed. Taking you to tracking…', 'ok');
+      render();
+      // จ่ายสำเร็จ -> ไปหน้าติดตามพัสดุอัตโนมัติ
+      setTimeout(function () { location.href = trackUrl(); }, 1500);
+    }).catch(function () { say('Can’t reach the server.', 'err'); b.disabled = false; });
+  });
+
+  window.addEventListener('resize', function () { if (order) fit(); });
+})();
+</script>
+</body>
+</html>

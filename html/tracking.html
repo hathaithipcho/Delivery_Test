@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracking · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Thai:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3a3532;--pink:#d9327f;--soft:#cf6f96;--bg:#f8e7ee;--muted:#8a7f86;--line:#cfc9ce;--ok:#4e7a5a;--err:#b4475f;--silver:#a9afbd;--star:#e0a526}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Playfair Display","Noto Serif Thai",Georgia,serif;font-weight:400;line-height:1.55;
+ background:url("../images/bg2.png") center/cover fixed no-repeat,var(--bg)}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:18px 24px}
+.logo{text-decoration:none;font-size:30px;font-weight:500;line-height:1;letter-spacing:.02em;
+  color:#9aa4b8;background:linear-gradient(100deg,#8a94aa 0%,#dde2ec 28%,#98a2b6 52%,#e3e7f0 76%,#8a94aa 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 0 rgba(110,120,140,.35))}
+.logo b{font-weight:500}
+header a.nav{font-size:13px;letter-spacing:.06em;text-decoration:none;color:var(--muted)}header a.nav:hover{color:var(--pink)}
+
+.wrap{width:min(480px,calc(100% - 32px));margin:6px auto 70px}
+.msg{min-height:1.5em;font-size:14px;margin:0 0 10px;text-align:center}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+
+/* ---------- ส่วนหัว ---------- */
+.hero{text-align:center;margin:18px 0 44px}
+.oval{display:inline-block;padding:5px 26px;border:1px solid var(--line);border-radius:50%;outline:1px solid var(--line);outline-offset:3px;
+  font-family:ui-monospace,"Courier New",Consolas,monospace;font-size:12.5px;letter-spacing:.08em;color:var(--muted);background:rgba(255,255,255,.5)}
+.hero h1{margin:26px 0 0;font-weight:400;font-size:30px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase}
+.hero .sub{margin:4px 0 0;font-style:italic;font-size:20px;color:#a99ba3;line-height:1.3}
+.hero .sub small{display:block;margin-top:2px;font-style:normal;font-size:13px;letter-spacing:.04em;color:var(--muted)}
+.hero.done h1{color:var(--ok)}
+
+/* ---------- กรอบบางๆ + วงกลมตัวเลขบนขอบ (เหมือนตัวอย่าง) ---------- */
+.frame{position:relative;background:rgba(255,255,255,.92);border:1px solid var(--line);padding:30px 22px 20px;margin:0 0 42px}
+.num{position:absolute;top:-19px;left:50%;transform:translateX(-50%);width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;background:#fff;border:1px solid var(--line);font-size:12.5px;letter-spacing:.06em;color:#6b6b72}
+.cap{margin:0 0 12px;text-align:center;font-size:11.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+
+/* เส้นทาง */
+.route svg{display:block;width:100%;height:auto;overflow:visible}
+.route .base{fill:none;stroke:#cfd3dc;stroke-width:2;stroke-linecap:round;stroke-dasharray:1 7}
+.route .prog{fill:none;stroke:var(--soft);stroke-width:2;stroke-linecap:round}
+.route .o{fill:#fff;stroke:#8f96a6;stroke-width:2}
+.route .d{fill:none;stroke:var(--soft);stroke-width:2}
+.route .d2{fill:var(--soft)}
+.route .me{fill:var(--soft);stroke:#fff;stroke-width:3}
+.route .pulse{fill:var(--soft);opacity:.25;transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.35}100%{transform:scale(2.2);opacity:0}}
+.ends{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.ends div:last-child{text-align:right}
+.ends p{margin:0}
+.ends .k{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.ends .ad{margin-top:1px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.meta{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid #ece7ea;font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:400}
+
+/* ผู้ส่ง — ใส่รูปไอคอนของคุณที่ images/rider.png */
+.rider{display:flex;align-items:center;justify-content:center;gap:16px}
+.av{flex:none;position:relative;width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:#fff;
+  display:grid;place-items:center;overflow:hidden;font-size:22px;color:var(--muted)}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rider.none .av{opacity:.55}
+.rider .nm{margin:0;font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.rider .ph{margin:1px 0 0;font-size:14px;color:var(--muted)}
+.rider .ph a{color:var(--soft);text-decoration:none;letter-spacing:.04em}
+.rider .ph a:hover{text-decoration:underline}
+.rider.none .nm{color:var(--muted);font-size:15px}
+
+/* ไทม์ไลน์ */
+.tl{list-style:none;margin:4px auto 0;padding:0;width:max-content;max-width:100%}
+.tl li{position:relative;display:flex;gap:16px;padding:0 0 18px;color:#aaa1a7}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:7px;top:18px;bottom:-1px;width:1px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .dot{flex:none;width:15px;height:15px;margin-top:5px;border-radius:50%;background:#fff;border:1px solid var(--line);position:relative;z-index:1}
+.tl b{display:block;font-weight:400;font-size:15px;line-height:1.35}
+.tl small{display:block;font-size:12.5px}
+.tl small.tm{margin-top:1px;font-size:12px;color:var(--muted)}
+/* หมายเหตุของเหตุการณ์ (tracking_event.note) */
+.tl small.nt{margin-top:1px;font-size:12.5px;font-style:italic;color:var(--soft);overflow-wrap:anywhere}
+.tl li.done{color:var(--ink)}
+.tl li.done .dot{background:var(--soft);border-color:var(--soft)}
+.tl li.done::before{background:var(--soft)}
+.tl li.now{color:var(--ink)}
+.tl li.now b{color:var(--soft)}
+.tl li.now .dot{border-color:var(--soft);box-shadow:0 0 0 4px rgba(207,111,150,.16)}
+.tl li.all .dot{background:var(--ok);border-color:var(--ok);box-shadow:none}
+
+.notice{margin:-18px 0 34px;text-align:center;font-size:13px;color:var(--muted)}
+.notice a{color:var(--soft)}
+
+/* คะแนนที่ให้ไว้แล้ว */
+.rated{margin:0 0 18px;text-align:center;font-size:14px;color:var(--muted)}
+.rated b{display:block;margin-top:2px;font-weight:400;font-size:26px;letter-spacing:.12em;color:var(--star)}
+
+/* ปุ่มสีเงิน เหมือนหน้า payment */
+.btn{display:block;width:100%;font:inherit;font-size:16px;letter-spacing:.06em;padding:12px;border-radius:24px;text-align:center;
+  border:1px solid var(--silver);color:#3a3f4a;cursor:pointer;text-decoration:none;margin-bottom:14px;
+  background:linear-gradient(180deg,#ffffff 0%,#eceef3 42%,#cfd3dc 58%,#e6e9ef 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,.85);
+  box-shadow:0 10px 18px rgba(120,50,90,.18),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3);
+  transition:filter .2s,box-shadow .2s,transform .2s}
+.btn:hover{filter:brightness(1.04);
+  box-shadow:0 12px 22px rgba(120,50,90,.24),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3)}
+.btn:active{transform:translateY(1px);
+  box-shadow:0 5px 10px rgba(120,50,90,.18),inset 0 2px 3px rgba(95,105,125,.35)}
+.btn:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.btn.rate{color:#b0205f}
+
+@media (prefers-reduced-motion:reduce){.route .pulse{animation:none}}
+@media print{body{background:#fff}header,.btn{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">Deli<b>very</b></a>
+  <a class="nav" href="customer.html#orders">← Back to my orders</a>
+</header>
+
+<main class="wrap">
+  <p class="msg" id="msg" role="status"></p>
+
+  <div id="view" hidden>
+    <div class="hero" id="hero">
+      <span class="oval" id="trk">—</span>
+      <h1>Tracking</h1>
+      <p class="sub" id="sub">—</p>
+    </div>
+
+    <p class="notice" id="unpaid" hidden>Payment not confirmed yet · ยังไม่ได้ชำระเงิน — <a id="payLink" href="#">pay now</a></p>
+
+    <!-- 01 เส้นทาง -->
+    <section class="frame route">
+      <span class="num">01</span>
+      <p class="cap">Route · เส้นทาง</p>
+      <svg viewBox="0 0 400 150" role="img" aria-label="Delivery route">
+        <path id="pathBase" class="base" d="M44 40 C44 140 130 150 172 100 S242 18 272 100 S356 130 356 40"/>
+        <path id="pathProg" class="prog" d="M44 40 C44 140 130 150 172 100 S242 18 272 100 S356 130 356 40"/>
+        <circle class="o" cx="44" cy="40" r="9"/>
+        <circle class="d" cx="356" cy="40" r="11"/><circle class="d2" cx="356" cy="40" r="4"/>
+        <g id="me" hidden><circle class="pulse" r="9"/><circle class="me" r="7"/></g>
+      </svg>
+      <div class="ends">
+        <div><p class="k">From · ต้นทาง</p><p class="ad" id="from">—</p></div>
+        <div><p class="k">To · ที่หมาย</p><p class="ad" id="to">—</p></div>
+      </div>
+      <div class="meta">
+        <span>Receiver · ผู้รับ <b id="rcv">—</b></span>
+        <span id="dist">—</span>
+      </div>
+    </section>
+
+    <!-- 02 ผู้ส่ง (rider) -->
+    <section class="frame">
+      <span class="num">02</span>
+      <p class="cap">Rider · ชื่อผู้ส่ง</p>
+      <div class="rider" id="rider">
+        <!-- ใส่รูปไอคอนของคุณที่ ../images/rider.png (ถ้าไม่มีรูป จะแสดงตัวอักษรแรกของชื่อแทน) -->
+        <div class="av"><span id="avfb"></span><img id="avimg" src="../images/rider.png" alt="" onerror="this.style.display='none'"></div>
+        <div>
+          <p class="nm" id="rname">—</p>
+          <p class="ph" id="rphone"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 สถานะ -->
+    <section class="frame">
+      <span class="num">03</span>
+      <p class="cap">Status · สถานะพัสดุ</p>
+      <ol class="tl" id="tl"></ol>
+    </section>
+
+    <!-- ให้คะแนนไรเดอร์: ปุ่มจะโผล่เมื่อพัสดุถึงที่หมายแล้วและยังไม่เคยให้คะแนน -->
+    <a class="btn rate" id="rateBtn" href="#" hidden>★ Rate your rider · ให้คะแนนไรเดอร์</a>
+    <p class="rated" id="rated" hidden></p>
+
+    <a class="btn" href="customer.html">Send another parcel</a>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var API = '../api/parcel.php';
+  var id = new URLSearchParams(location.search).get('id');
+  var $ = function (i) { return document.getElementById(i); };
+  function say(t, c) { $('msg').className = 'msg ' + (c || ''); $('msg').textContent = t; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function readJson(r) {
+    return r.text().then(function (t) {
+      try { return JSON.parse(t); } catch (e) { return { error: 'Server error (HTTP ' + r.status + '). Open this page via http://localhost:8000 (PHP server), not Live Server.' }; }
+    });
+  }
+
+  /* ขั้นตอนสถานะพัสดุ (เรียงตามลำดับ) */
+  var STEPS = [
+    { th: 'รอผู้ส่งรับงาน',     en: 'Waiting for a rider' },
+    { th: 'ผู้ส่งรับงานแล้ว',    en: 'Rider accepted' },
+    { th: 'พัสดุกำลังจัดส่ง',    en: 'Parcel on the way' },
+    { th: 'พัสดุถึงที่หมายแล้ว', en: 'Delivered' }
+  ];
+  /* ตำแหน่งของจุดบนเส้นทางในแต่ละขั้น (0–1) */
+  var PROGRESS = [0, 0.12, 0.55, 1];
+
+  /* แปลงค่า status (จาก parcel.status / tracking_event.status) ให้เป็นลำดับขั้น 0–3 */
+  function classify(s) {
+    s = String(s || '').toLowerCase();
+    if (/deliver(ed)?$|^done|complete|arriv|success|ถึง|สำเร็จ/.test(s) && !/ing$/.test(s)) return 3;
+    if (/transit|way|ship|pick|delivering|out_for|ระหว่าง|จัดส่ง/.test(s)) return 2;
+    if (/accept|assign|rider|รับงาน/.test(s)) return 1;
+    return 0;
+  }
+  function stepOf(o, rider) {
+    var s = o.status || o.delivery_status || o.parcel_status || '';
+    if (s === '' && o.events && o.events.length) s = o.events[o.events.length - 1].status;
+    var k = classify(s);
+    /* ยังเป็น pending แต่มีไรเดอร์รับงานแล้ว -> "ผู้ส่งรับงานแล้ว" */
+    if (k === 0 && rider.name) return 1;
+    return k;
+  }
+
+  /* ดึงข้อมูล rider (รองรับชื่อฟิลด์หลายแบบ) */
+  function riderOf(o) {
+    var r = o.rider || o.driver || {};
+    return {
+      name:  o.rider_name  || o.driver_name  || r.name  || r.full_name || '',
+      phone: o.rider_phone || o.driver_phone || r.phone || r.tel || ''
+    };
+  }
+  function fmtPhone(p) {
+    var d = String(p).replace(/\D/g, '');
+    return d.length === 10 ? d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6) : p;
+  }
+
+  var pathLen = 0;
+  function drawRoute(p) {
+    var base = $('pathBase'), prog = $('pathProg'), me = $('me');
+    pathLen = pathLen || base.getTotalLength();
+    prog.style.strokeDasharray = pathLen;
+    prog.style.strokeDashoffset = pathLen * (1 - p);
+    if (p <= 0 || p >= 1) { me.hidden = true; return; }
+    var pt = base.getPointAtLength(pathLen * p);
+    me.setAttribute('transform', 'translate(' + pt.x + ' ' + pt.y + ')');
+    me.hidden = false;
+  }
+
+  function render(o) {
+    var rider = riderOf(o), step = stepOf(o, rider), last = step === 3;
+
+    $('trk').textContent = o.tracking_no || ('#' + id);
+    $('from').textContent = o.pickup_address || '-';
+    $('to').textContent = o.dropoff_address || '-';
+    $('rcv').textContent = o.receiver_name || '-';
+    $('dist').textContent = (o.size ? o.size + ' · ' : '') + (o.distance_km != null ? o.distance_km + ' km' : '');
+
+    $('hero').className = 'hero' + (last ? ' done' : '');
+    $('sub').innerHTML = esc(STEPS[step].en) + '<small>' + esc(STEPS[step].th) + '</small>';
+
+    /* rider */
+    var has = !!rider.name;
+    $('rider').className = 'rider' + (has ? '' : ' none');
+    $('avfb').textContent = has ? Array.from(rider.name.trim())[0].toUpperCase() : '·';
+    $('rname').textContent = has ? rider.name : 'Waiting for a rider · รอผู้ส่งรับงาน';
+    $('rphone').innerHTML = (has && rider.phone)
+      ? 'โทร <a href="tel:' + esc(String(rider.phone).replace(/[^\d+]/g, '')) + '">' + esc(fmtPhone(rider.phone)) + '</a>'
+      : '';
+
+    /* timeline: เวลา (event_time) และหมายเหตุ (note) ของเหตุการณ์แรกในแต่ละขั้น */
+    var times = {}, notes = {};
+    (o.events || []).forEach(function (e) {
+      var k = classify(e.status);
+      if (!(k in times)) { times[k] = e.time; notes[k] = e.note; }
+    });
+    $('tl').innerHTML = STEPS.map(function (s, i) {
+      var cls = i < step ? 'done' : (i === step ? (last ? 'done all now' : 'now') : '');
+      return '<li class="' + cls + '"><span class="dot"></span><div><b>' + esc(s.th) + '</b><small>' + esc(s.en) + '</small>' +
+             (times[i] ? '<small class="tm">' + esc(times[i]) + '</small>' : '') +
+             (notes[i] ? '<small class="nt">' + esc(notes[i]) + '</small>' : '') +
+             '</div></li>';
+    }).join('');
+
+    drawRoute(PROGRESS[step]);
+
+    /* ให้คะแนนไรเดอร์: ถึงที่หมายแล้ว + มีไรเดอร์ + ยังไม่เคยให้คะแนน -> โชว์ปุ่ม */
+    $('rateBtn').hidden = !(last && has && !o.rating);
+    $('rateBtn').href = 'rating.html?id=' + encodeURIComponent(id);
+    if (last && o.rating) {
+      var n = Math.max(0, Math.min(5, +o.rating.star || 0));
+      $('rated').hidden = false;
+      $('rated').innerHTML = 'Your rating · คะแนนที่คุณให้<b>' + new Array(n + 1).join('★') + new Array(6 - n).join('☆') + '</b>';
+    } else {
+      $('rated').hidden = true;
+    }
+
+    /* ยังไม่จ่ายเงิน (ไม่นับเงินสด) */
+    var unpaid = o.pay_status !== 'paid' && o.method !== 'cash';
+    $('unpaid').hidden = !unpaid;
+    $('payLink').href = 'payment.html?id=' + encodeURIComponent(id);
+
+    $('view').hidden = false;
+    return last;
+  }
+
+  var timer = null;
+  function load(first) {
+    fetch(API + '?a=order&id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+      .then(readJson)
+      .then(function (j) {
+        if (j.error) {
+          say(j.error, 'err');
+          if (j.login) setTimeout(function () { location.href = 'login.html?role=customer'; }, 1200);
+          return;
+        }
+        say('');
+        var done = render(j.order);
+        /* อัปเดตสถานะอัตโนมัติทุก 8 วินาที จนกว่าจะส่งถึง */
+        if (!done) timer = setTimeout(function () { load(false); }, 8000);
+      })
+      .catch(function () {
+        if (first) say('Can’t reach the server.', 'err');
+        else timer = setTimeout(function () { load(false); }, 8000);
+      });
+  }
+
+  if (!id) { say('Missing order id (?id=...).', 'err'); return; }
+  load(true);
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && timer) { clearTimeout(timer); load(false); }
+  });
+})();
+</script>
+</body>
+</html>

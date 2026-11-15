@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fffdf3;--ink:#6b4f3f;--pink:#e58fab;--rose:#f8cfdb;--soft:#fdeef3;--line:#ecd9cf;--err:#b4475f;--e:cubic-bezier(.22,.8,.25,1)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 15px/1.6 "Jost",system-ui,sans-serif;display:grid;place-items:center;padding:24px;
+ background:var(--bg) url(../images/bg2.png) center/cover no-repeat fixed}
+
+.scene{position:relative;width:1455px;height:1069px;flex:none}
+.box-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;
+  transform:scale(1.15);
+  filter:drop-shadow(0 30px 30px rgba(107,79,63,.3))}
+
+.card{position:absolute;inset:0;margin:auto;height:fit-content;
+  display:grid;grid-template-columns:1fr 1fr;width:960px;min-height:600px;background:#fff;border-radius:22px;overflow:hidden;
+ box-shadow:0 0 0 8px var(--bg),0 0 0 9px var(--line),0 24px 40px -10px rgba(60,35,15,.55);animation:in .9s var(--e) both}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:64px;z-index:3;pointer-events:none;background:url(../images/lace-top.png) repeat-x left top/auto 100%}
+@keyframes in{from{opacity:0;transform:translateY(24px) scale(.98)}}
+
+.art{position:relative;display:grid;place-items:center;text-align:center;padding:40px;overflow:hidden;
+ background:radial-gradient(circle at 25% 20%,#fff6f9,transparent 55%),
+ repeating-conic-gradient(from 45deg at 50% 50%,#f7c3d2 0 25%,#fbd9e3 0 50%) 0 0/46px 46px}
+.art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,253,243,.82) 30%,transparent 72%)}
+.arch{position:relative;z-index:1;width:min(88%,400px);padding:46px 20px 40px;background:var(--bg);border-radius:999px 999px 24px 24px}
+.arch .box{display:block;margin:0 auto;width:min(100%,320px);height:auto;max-height:400px;object-fit:contain}
+.petal{position:absolute;z-index:1;top:-10%;left:var(--x);width:var(--s);height:calc(var(--s)*1.25);background:radial-gradient(circle at 30% 30%,#fff3f7,#f4a9c0 75%);
+ border-radius:80% 0 80% 0;opacity:.85;animation:fall var(--d) linear var(--dl) infinite}
+@keyframes fall{to{transform:translate(40px,115vh) rotate(300deg)}}
+.art .petal{animation-name:fall2}@keyframes fall2{to{transform:translate(30px,700px) rotate(300deg)}}
+
+.form{padding:44px 46px;display:flex;flex-direction:column;justify-content:center;position:relative}
+.logo{font:400 21px "Bodoni Moda",Georgia,serif;letter-spacing:.08em;text-decoration:none;color:var(--ink)}
+h2{font:400 32px/1.15 "Bodoni Moda",Georgia,serif;letter-spacing:.01em;margin:14px 0 2px}
+.hi{margin:0 0 20px;opacity:.75;font-size:15px}
+.roles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:18px}
+.roles label{cursor:pointer}.roles input{position:absolute;opacity:0}
+.roles span{display:block;text-align:center;padding:9px 4px;border:1px solid var(--line);border-radius:12px;font-size:14px;transition:.3s var(--e)}
+.roles b{display:block;min-height:34px;margin-bottom:2px}.roles b img{height:34px;width:auto;display:block;margin:0 auto}
+.roles label:hover span{border-color:var(--pink)}
+.roles input:checked+span{background:var(--soft);border-color:var(--pink);box-shadow:0 6px 14px -8px var(--pink)}
+.roles input:focus-visible+span{outline:2px solid var(--pink);outline-offset:2px}
+.mode{display:flex;gap:22px;margin-bottom:6px;font-size:15px}
+.mode button{background:none;border:0;padding:4px 0;font:inherit;color:var(--ink);opacity:.55;cursor:pointer;border-bottom:1.5px solid transparent}
+.mode button.on{opacity:1;border-color:var(--pink)}
+.fld{position:relative;margin-top:14px}
+.fld input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px 14px 7px;transition:.3s}
+.fld label{position:absolute;left:15px;top:13px;font-size:15px;opacity:.65;pointer-events:none;transition:.25s var(--e);transform-origin:left}
+.fld input:-webkit-autofill+label,
+.fld input.has+label,
+.fld input:focus+label,.fld input:not(:placeholder-shown)+label{transform:translateY(-9px) scale(.75)}
+.fld input:focus{outline:0;border-color:var(--pink);box-shadow:0 0 0 4px var(--soft)}
+.eye{position:absolute;right:10px;top:12px;background:none;border:0;cursor:pointer;font-size:13px;color:var(--ink);opacity:.6}
+.msg{min-height:22px;margin:10px 0 4px;font-size:15px;color:var(--err)}
+.go{width:100%;font:inherit;font-weight:500;font-size:13px;letter-spacing:.2em;text-transform:uppercase;padding:14px;border:0;border-radius:12px;color:#fff;cursor:pointer;
+ background:linear-gradient(135deg,#d97b99,var(--pink));box-shadow:0 12px 22px -12px #d97b99;transition:transform .3s var(--e),box-shadow .3s}
+.go:hover{transform:translateY(-2px);box-shadow:0 16px 26px -12px #d97b99}.go:disabled{opacity:.6;cursor:wait}
+.lace{position:absolute;left:0;right:0;bottom:0;height:16px;background:url(../images/lace.png) repeat-x left bottom/auto 100%}
+
+@media(min-width:901px){
+  html,body{overflow:hidden}
+  .scene{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--k,1))}
+}
+
+@media(max-width:900px){
+  .scene{width:100%;height:auto}
+  .box-img{display:none}
+  .card{position:relative;inset:auto;margin:0 auto;width:min(960px,100%)}
+}
+
+@media(max-width:780px){.card{grid-template-columns:1fr}.art{min-height:200px;padding:20px}.arch{padding:22px 16px 16px;border-radius:30px;width:min(100%,340px)}.arch .box{width:min(100%,240px)}.form{padding:30px 24px 36px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="scene" id="scene">
+ <img class="box-img" src="../images/box.png" alt="">
+ 
+ <main class="card">
+  <aside class="art" aria-hidden="true">
+   <i class="petal" style="--x:10%;--s:14px;--d:11s;--dl:-2s"></i><i class="petal" style="--x:32%;--s:18px;--d:14s;--dl:-8s"></i>
+   <i class="petal" style="--x:58%;--s:12px;--d:10s;--dl:-5s"></i><i class="petal" style="--x:82%;--s:16px;--d:13s;--dl:-1s"></i><i class="petal" style="--x:70%;--s:10px;--d:9s;--dl:-7s"></i>
+   <div class="arch">
+    <img class="box" src="../images/login-box.png" alt="" onerror="this.remove()">
+   </div>
+  </aside>
+  <section class="form">
+   <a class="logo" href="index.html">← Delivery</a>
+   <h2 id="ttl">Good to see you</h2><p class="hi" id="hi">Choose a service and sign in to continue</p>
+   <div class="roles" role="radiogroup" aria-label="Choose a service">
+    <label><input type="radio" name="role" value="customer" checked><span><b><img src="../images/role-customer.png" alt="" onerror="this.remove()"></b>Customer</span></label>
+    <label><input type="radio" name="role" value="rider"><span><b><img src="../images/role-rider.png" alt="" onerror="this.remove()"></b>Rider</span></label>
+   </div>
+   <div class="mode"><button type="button" class="on" data-m="login">Sign in</button><button type="button" data-m="register">Sign up</button></div>
+   <div class="fld" id="fName" hidden><input id="name" placeholder=" " autocomplete="name"><label for="name">Full name</label></div>
+   <div class="fld"><input id="id" placeholder=" " autocomplete="username"><label for="id" id="idL">Email</label></div>
+   <div class="fld" id="fPhone" hidden><input id="phone" placeholder=" " inputmode="tel" autocomplete="tel"><label for="phone">Phone number</label></div>
+   <div class="fld"><input id="pw" type="password" placeholder=" " autocomplete="current-password"><label for="pw">Password</label><button type="button" class="eye" id="eye">Show</button></div>
+   <p class="msg" id="msg" role="alert"></p>
+   <button class="go" id="go">Sign in</button>
+   <div class="lace"></div>
+  </section>
+ </main>
+</div>
+<script>
+const $=id=>document.getElementById(id),q=s=>document.querySelector(s);
+const DEST={customer:'customer.html',rider:'rider.html'};
+let mode='login';
+const role=()=>q('[name=role]:checked').value, isRider=()=>role()==='rider';
+function sync(){
+ const reg=mode==='register',r=isRider();
+ $('fName').hidden=!reg; $('fPhone').hidden=!(reg&&!r);
+ $('idL').textContent=r?'Phone number':'Email'; $('id').type=r?'tel':'email';
+ $('go').textContent=reg?'Sign up':'Sign in';
+ $('ttl').textContent=reg?'Begin your journey':'Good to see you';
+ $('hi').textContent={customer:'Send parcels and track their status',rider:'Accept deliveries and track your earnings'}[role()];
+ $('pw').autocomplete=reg?'new-password':'current-password'; $('msg').textContent='';
+}
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));sync()});
+document.querySelectorAll('[name=role]').forEach(r=>r.onchange=sync);
+$('eye').onclick=()=>{const s=$('pw').type==='password';$('pw').type=s?'text':'password';$('eye').textContent=s?'Hide':'Show'};
+async function submit(){
+const r=isRider(),reg=mode==='register',b={role:r?'rider':'customer',password:$('pw').value};
+ if(reg){b.name=$('name').value;if(r){b.phone=$('id').value}else{b.email=$('id').value;b.phone=$('phone').value}}else b.id=$('id').value;
+ $('go').disabled=true;$('msg').textContent='';
+ try{const res=await fetch('../api/api.php?a='+(reg?'register':'login'),{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json());
+  if(res.error)$('msg').textContent=res.error;else location.href=DEST[role()];
+ }catch(e){$('msg').textContent='Can\'t reach the server'}
+ $('go').disabled=false;
+}
+$('go').onclick=submit;document.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
+
+document.querySelectorAll('.fld input').forEach(i=>{
+  const f=()=>i.classList.toggle('has',!!i.value);
+  i.addEventListener('input',f);setTimeout(f,300);setTimeout(f,1000);
+});
+
+function fit(){
+  const s=$('scene');
+  if(innerWidth<=900){s.style.removeProperty('--k');return}
+  s.style.setProperty('--k',Math.min(1,innerWidth/1455,innerHeight/1069).toFixed(4));
+}
+addEventListener('resize',fit);fit();
+
+/* เลือก role ตามลิงก์ (?role=rider / ?role=customer) */
+const want=new URLSearchParams(location.search).get('role');
+if(want==='rider'||want==='customer') q('[name=role][value='+want+']').checked=true;
+
+/* ถ้าล็อกอินอยู่แล้วด้วย role ที่เลือก -> ข้ามไปหน้าปลายทางเลย */
+fetch('../api/api.php?a=me',{credentials:'same-origin'}).then(x=>x.json()).then(r=>{
+  if(r&&!r.guest&&r.role===role()) location.href=DEST[r.role];
+}).catch(()=>{});
+
+sync();
+</script></body></html>

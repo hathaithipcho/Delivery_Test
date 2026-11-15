@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Pinyon+Script&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9e4d9;--paper:#fff;--ink:#3a3532;--gold:#8a6a2c;--edge:#b9a98d;--opt:#f0ede4;--pill:#f3e6bd;--side:#dedacb;--muted:#7a736b;--err:#b4475f;--ok:#4e7a5a}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:"Playfair Display","Noto Serif Thai",Georgia,serif;line-height:1.5;
+ background:
+  url("../images/bg2.png") center/cover fixed no-repeat,
+  radial-gradient(circle at 20% 20%,#f1ede4 0 2px,transparent 3px) 0 0/46px 46px,
+  radial-gradient(circle at 70% 70%,#e2dccf 0 2px,transparent 3px) 0 0/46px 46px,
+  var(--bg)}
+a{color:inherit}
+.bar{background:#111;color:#fff;text-align:center;font-size:12px;padding:7px 12px;letter-spacing:.03em}
+header{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;padding:18px 32px}
+.logo{text-decoration:none;font-size:28px;color:#6f86b5;line-height:1}.logo b{font-weight:400;color:#d98aa3}
+nav{display:flex;gap:40px;font-size:14px}nav a{text-decoration:none}nav a:hover{color:var(--gold)}
+.signin{font-size:14px;text-decoration:none}
+
+.hero{position:relative;text-align:center;padding:26px 20px 8px;max-width:1100px;margin:0 auto}
+.label{display:inline-block;padding:14px 54px 10px;background:#fffdf4;border:1px solid var(--edge);outline:1px solid var(--edge);outline-offset:4px;border-radius:34px 34px 34px 34px/26px;font-family:"Pinyon Script",cursive;font-size:42px;color:#4a4540;line-height:1.1}
+.hero p{margin:14px 0 0;color:var(--muted);font-size:15px}
+.deco{position:absolute;pointer-events:none;height:auto}
+.d1{left:0;top:0;width:130px}.d2{right:0;top:0;width:110px}
+
+.wrap{display:grid;grid-template-columns:1.15fr 1fr;max-width:1100px;margin:26px auto 0;background:var(--paper);border:1px solid var(--edge);box-shadow:0 6px 30px rgba(90,70,40,.08)}
+.form{padding:36px 40px}
+.side{background:var(--side);padding:36px 34px}
+h2{font-weight:400;font-size:26px;margin:0 0 6px}
+.steps{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:24px}
+.dot{width:26px;height:26px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-size:13px}
+h3{font-weight:400;font-size:20px;margin:30px 0 14px}
+.f{margin-bottom:18px}
+.f>label,legend{display:block;font-size:14px;color:var(--gold);margin-bottom:6px;padding:0}
+.f label i,legend i{font-style:normal;color:var(--muted);font-size:12px;margin-left:6px}
+.row{display:flex;gap:8px}
+input[type=text],input[type=tel]{width:100%;font:inherit;font-size:15px;color:var(--ink);padding:11px 12px;border:1px solid var(--edge);border-radius:6px;background:#fff;outline:0}
+input[type=text]:focus,input[type=tel]:focus{border-color:var(--gold);box-shadow:0 0 0 2px #efe3c3}
+input.bad{border-color:var(--err)}
+.loc,.pin{flex:none;font:inherit;font-size:13px;padding:0 14px;border:1px solid var(--edge);background:var(--opt);color:var(--gold);border-radius:6px;cursor:pointer}
+.loc:hover,.pin:hover{background:var(--pill)}
+.modal{position:fixed;inset:0;background:rgba(40,30,20,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal[hidden]{display:none}
+.mbox{background:#fff;border-radius:10px;width:min(720px,100%);padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.mbox h4{margin:0 0 4px;font-weight:500;font-size:18px}
+#pinMap{height:min(60vh,420px);border-radius:6px;border:1px solid var(--edge);margin:10px 0}
+.mrow{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.mrow .btn{width:auto;padding:10px 22px;font-size:15px}
+.hint{font-size:12px;color:var(--muted);margin:5px 0 0;min-height:1.2em}
+.hint.ok{color:var(--ok)}.hint.err{color:var(--err)}
+
+fieldset{border:0;margin:0 0 18px;padding:0}
+.opts{display:grid;gap:8px}.opts.c3{grid-template-columns:repeat(3,1fr)}
+.opt{position:relative;cursor:pointer}
+.opt input{position:absolute;opacity:0;inset:0}
+.opt span{display:flex;flex-direction:column;justify-content:center;height:100%;padding:13px 16px;background:var(--opt);border:1px solid transparent;border-radius:6px;color:var(--gold);font-size:15px;transition:.2s}
+.opt span small{font-size:12px;color:var(--muted)}
+.opt:hover span{background:#ebe6d8}
+.opt input:checked+span{background:var(--pill);border-color:var(--gold)}
+.opt input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
+.opts.c3 .opt span{align-items:center;text-align:center}
+.opts.c3 .opt b{font-size:26px;font-weight:400;color:var(--ink)}
+
+.side h2{font-size:24px;margin-bottom:18px}
+.line{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:15px}
+.line small{display:block;color:var(--muted);font-size:12px}
+.line.t{border-top:1px solid var(--ink);margin-top:8px;padding-top:14px;font-size:18px}
+.line.t b{font-size:26px;font-weight:500}
+.pillh{display:inline-block;border:1px solid var(--edge);border-radius:20px;padding:7px 18px;font-size:14px;margin:22px 0 12px;background:#efece2}
+.card{background:#fff;border:1px solid #e5e0d3;border-radius:6px;padding:14px 16px;font-size:14px}
+.card div{display:flex;justify-content:space-between;padding:3px 0;gap:10px}
+.card span{color:var(--muted)}.card em{font-style:normal;text-align:right}
+.msg{min-height:1.5em;font-size:14px;margin:18px 0 8px}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+.btn{display:block;width:100%;font:inherit;font-size:16px;letter-spacing:.06em;padding:13px;border-radius:24px;border:1px solid transparent;background:var(--pill);color:var(--gold);cursor:pointer;text-align:center;text-decoration:none;transition:.2s}
+.btn:hover{background:#ecd98f}.btn:disabled{opacity:.6;cursor:wait}
+.back{display:block;text-align:center;margin:14px 0 0;font-size:14px;color:var(--muted)}
+
+/* My orders: รายการพัสดุของลูกค้า (โชว์เมื่อล็อกอินแล้ว) */
+.orders{max-width:1100px;margin:34px auto 0;background:var(--paper);border:1px solid var(--edge);box-shadow:0 6px 30px rgba(90,70,40,.08);padding:32px 40px;scroll-margin-top:20px}
+.orders[hidden]{display:none}
+.orders h2{margin-bottom:2px}
+.orders .sub{margin:0 0 16px;font-size:13px;color:var(--muted)}
+.ord{display:grid;grid-template-columns:1.3fr 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid #e5e0d3}
+.ord .t{font-family:ui-monospace,Consolas,monospace;font-size:14px;letter-spacing:.03em}
+.ord small{display:block;font-size:12px;color:var(--muted)}
+.chip{display:inline-block;padding:3px 12px;border-radius:14px;background:var(--opt);color:var(--gold);font-size:12.5px}
+.chip.ok{background:#e4efe7;color:var(--ok)}
+.chip.wait{background:#f6e6ea;color:var(--err)}
+.ord .btn{width:auto;padding:8px 24px;font-size:14px}
+
+footer{max-width:1100px;margin:36px auto 0;padding:20px 32px 30px;text-align:center;font-size:13px;color:var(--muted)}
+
+@media(max-width:900px){nav{display:none}header{padding:16px 20px}.wrap{grid-template-columns:1fr;margin:20px 12px 0}.form,.side{padding:26px 20px}.deco{display:none}.label{font-size:34px;padding:12px 34px 8px}
+  .orders{margin:20px 12px 0;padding:22px 18px}.ord{grid-template-columns:1fr auto}.ord>div:nth-child(2){grid-column:1/-1;order:3}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="index.html">Deli<b>very</b></a>
+  <nav><a href="index.html">Home</a><a href="index.html#services">Services</a><a href="#orders">My orders</a><a href="#contact">Contact</a></nav>
+  <a class="signin" id="authLink" href="login.html">Sign in</a>
+</header>
+
+<section class="hero">
+  <img class="deco d1" src="../images/deco-1.png" alt="" onerror="this.remove()">
+  <img class="deco d2" src="../images/deco-2.png" alt="" onerror="this.remove()">
+  <div class="label">Send a parcel</div>
+  <p>ส่งของถึงลูกค้า · Add the addresses, choose a size, and we’ll carry it for you.</p>
+</section>
+
+<main class="wrap">
+  <!-- LEFT: PARCEL + PAYMENT entities -->
+  <div class="form">
+    <h2>Delivery details</h2>
+    <div class="steps"><span class="dot">1</span> Details &nbsp;—&nbsp; <span class="dot" style="background:#bbb">2</span> Confirm &amp; pay</div>
+
+    <h3>Sender <i style="font-size:13px;color:var(--muted);font-style:normal">ผู้ส่ง</i></h3>
+    <div class="f">
+      <label for="pickup">Pickup address <i>ที่อยู่รับพัสดุ</i></label>
+      <div class="row"><input id="pickup" type="text" placeholder="House no., street, sub-district, district, province"  autocomplete="street-address"><button class="loc" type="button" data-t="p">Locate</button><button class="pin" type="button" data-pin="p">Pin</button></div>
+      <p class="hint" id="ph"></p>
+    </div>
+
+    <h3>Receiver <i style="font-size:13px;color:var(--muted);font-style:normal">ผู้รับ</i></h3>
+    <div class="f"><label for="recipient">Receiver name <i>ชื่อผู้รับ </i></label><input id="recipient" type="text" autocomplete="off"></div>
+    <div class="f"><label for="rphone">Receiver phone <i>เบอร์ผู้รับ </i></label><input id="rphone" type="tel" inputmode="tel" placeholder="0812345678" autocomplete="off"></div>
+    <div class="f">
+      <label for="dropoff">Drop-off address <i>ที่อยู่ปลายทาง </i></label>
+      <div class="row"><input id="dropoff" type="text" placeholder="House no., street, district, province" autocomplete="off"><button class="loc" type="button" data-t="d">Locate</button><button class="pin" type="button" data-pin="d">Pin</button></div>
+      <p class="hint" id="dh"></p>
+    </div>
+
+    <h3>Parcel</h3>
+    <fieldset>
+      <legend>Size <i>ขนาดพัสดุ (size)</i></legend>
+      <div class="opts c3">
+        <label class="opt"><input type="radio" name="size" value="S"><span><b>S</b><small id="fS">Small</small></span></label>
+        <label class="opt"><input type="radio" name="size" value="M" checked><span><b>M</b><small id="fM">Medium</small></span></label>
+        <label class="opt"><input type="radio" name="size" value="L"><span><b>L</b><small id="fL">Large</small></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Payment <i>ชำระเงิน (method)</i></legend>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="method" value="promptpay" checked><span>PromptPay <small>พร้อมเพย์</small></span></label>
+        <label class="opt"><input type="radio" name="method" value="card"><span>Card <small>บัตร</small></span></label>
+        <label class="opt"><input type="radio" name="method" value="cash"><span>Cash <small>เงินสด</small></span></label>
+      </div>
+    </fieldset>
+  </div>
+
+  <!-- RIGHT: price summary (pricing_rule + distance) -->
+  <aside class="side">
+    <h2>Your order</h2>
+    <div class="line"><span>Base fee <small>base_fee · ขนาด <span id="sSize">M</span></small></span><b id="sBase">—</b></div>
+    <div class="line"><span>Distance fee <small id="sDistTxt">distance_km × per_km_rate</small></span><b id="sDist">—</b></div>
+    <div class="line t"><span>Total <small>total_price</small></span><b id="sTotal">—</b></div>
+
+    <div class="pillh">Order summary</div>
+    <div class="card">
+      <div><span>Pickup</span><em id="cP">—</em></div>
+      <div><span>Drop-off</span><em id="cD">—</em></div>
+      <div><span>Distance</span><em id="cKm">—</em></div>
+      <div><span>Receiver</span><em id="cR">—</em></div>
+      <div><span>Payment</span><em id="cM">PromptPay</em></div>
+    </div>
+
+    <p class="msg" id="msg" role="status"></p>
+    <button class="btn" id="confirm" type="button">Confirm order</button>
+    <a class="back" href="index.html#services">← Choose another service</a>
+  </aside>
+</main>
+
+<!-- MY ORDERS: โชว์เมื่อล็อกอินเป็นลูกค้าแล้ว (ดึงจาก parcel.php?a=list) -->
+<section class="orders" id="orders" hidden>
+  <h2>My orders</h2>
+  <p class="sub">พัสดุของฉัน · Follow your parcels or finish a payment.</p>
+  <div id="ordList"></div>
+</section>
+
+<footer id="contact">© Delivery System · Contact us · hello@example.com</footer>
+
+<div class="modal" id="pinModal" hidden>
+  <div class="mbox">
+    <h4 id="pinTitle">Pin location</h4>
+    <div class="muted" style="font-size:13px;color:var(--muted)">คลิกบนแผนที่เพื่อวางหมุด หรือลากหมุดไปตำแหน่งที่ต้องการ · Click the map or drag the pin</div>
+    <div id="pinMap"></div>
+    <div class="mrow">
+      <span class="hint" id="pinCoord">No pin yet</span>
+      <span><button class="btn" type="button" id="pinCancel" style="display:inline-block;background:transparent;border-color:var(--edge)">Cancel</button>
+      <button class="btn" type="button" id="pinOk" style="display:inline-block">Use this location</button></span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var API = '../api/parcel.php';
+  var CUR = '฿';
+  var rules = null;                 // PRICING_RULE rows keyed by size: base_fee, per_km_rate, min_fare
+  var pos = { p: null, d: null };   // {lat,lng} -> pickup_lat/lng, dropoff_lat/lng
+
+  var $ = function (id) { return document.getElementById(id); };
+  var checked = function (n) { var c = document.querySelector('input[name=' + n + ']:checked'); return c ? c.value : ''; };
+  var money = function (n) { return CUR + (Math.round(n * 100) / 100).toLocaleString('en-US'); };
+  function say(t, c) { $('msg').className = 'msg ' + (c || ''); $('msg').textContent = t; }
+  var short = function (v) { v = v.trim(); return v ? (v.length > 26 ? v.slice(0, 26) + '…' : v) : '—'; };
+
+  // อ่านผลลัพธ์เป็น JSON อย่างปลอดภัย (ถ้าเซิร์ฟเวอร์ตอบไม่ใช่ JSON จะแสดงสาเหตุแทน)
+  function readJson(r) {
+    return r.text().then(function (t) {
+      try { return JSON.parse(t); }
+      catch (e) { return { error: 'Server error (HTTP ' + r.status + ') — response is not JSON. Check PHP / pdo_sqlsrv.' }; }
+    });
+  }
+
+  function km() {
+    if (!pos.p || !pos.d) return null;
+    var R = 6371, r = Math.PI / 180;
+    var dLa = (pos.d.lat - pos.p.lat) * r, dLo = (pos.d.lng - pos.p.lng) * r;
+    var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(pos.p.lat * r) * Math.cos(pos.d.lat * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) / 10;
+  }
+
+  // preview only; the server recalculates distance_km, distance_fee and total_price
+  function update() {
+    var s = checked('size'), r = rules && rules[s], d = km();
+    $('sSize').textContent = s;
+    $('cP').textContent = short($('pickup').value);
+    $('cD').textContent = short($('dropoff').value);
+    $('cR').textContent = short($('recipient').value);
+    $('cM').textContent = { promptpay: 'PromptPay', card: 'Card', cash: 'Cash' }[checked('method')];
+    $('cKm').textContent = d === null ? '—' : d + ' km';
+    if (!r) { $('sBase').textContent = $('sDist').textContent = $('sTotal').textContent = '—'; return; }
+    var base = +r.base_fee, rate = +r.per_km_rate;
+    $('sBase').textContent = money(base);
+    $('sDistTxt').textContent = d === null ? 'Locate both addresses to calculate' : d + ' km × ' + money(rate) + '/km';
+    if (d === null) { $('sDist').textContent = $('sTotal').textContent = '—'; return; }
+    var df = d * rate;
+    $('sDist').textContent = money(df);
+    $('sTotal').textContent = money(Math.max(+r.min_fare || 0, base + df));
+  }
+
+  // ลองหาจากที่อยู่เต็มก่อน ถ้าไม่เจอค่อยตัดบ้านเลขที่/ซอยออก เหลือระดับแขวง/เขต/จังหวัด
+  function geoCandidates(q) {
+    var s = q.replace(/\s+/g, ' ').trim();
+    s = s.replace(/กรุงเทพฯ|กรุงเทพ(?!มหานคร)/g, 'กรุงเทพมหานคร');
+    var out = [s];
+    var m = s.match(/(แขวง|ตำบล|เขต|อำเภอ|ต\.|อ\.)[\s\S]*$/);
+    if (m) {
+      var seen = {};
+      var toks = m[0].replace(/(แขวง|ตำบล|เขต|อำเภอ|จังหวัด|ต\.|อ\.|จ\.)\s*/g, '').split(' ').filter(function (w) {
+        if (!w || seen[w]) return false; seen[w] = 1; return true;
+      });
+      var noZip = toks.filter(function (w) { return !/^\d{5}$/.test(w); });
+      out.push(toks.join(' '), noZip.join(' '));
+      if (noZip.length > 2) out.push(noZip.slice(1).join(' '));
+    }
+    return out.filter(function (c, i) { return c && out.indexOf(c) === i; }).slice(0, 4);
+  }
+  function lookup(q) {
+    return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=th&accept-language=th&q=' + encodeURIComponent(q))
+      .then(function (r) { return r.json(); });
+  }
+  function geocode(t) {
+    var inp = $(t === 'p' ? 'pickup' : 'dropoff'), h = $(t + 'h');
+    var q = inp.value.trim();
+    if (!q) { h.className = 'hint err'; h.textContent = 'Enter an address first.'; return Promise.resolve(false); }
+    h.className = 'hint'; h.textContent = 'Locating…';
+    var cands = geoCandidates(q);
+    function attempt(i) {
+      if (i >= cands.length) {
+        pos[t] = null; h.className = 'hint err';
+        h.textContent = 'Address not found — click “Pin” to place it on the map.';
+        update(); return Promise.resolve(false);
+      }
+      return lookup(cands[i]).then(function (j) {
+        if (j && j.length) {
+          pos[t] = { lat: +(+j[0].lat).toFixed(6), lng: +(+j[0].lon).toFixed(6) };
+          h.className = 'hint ok';
+          h.textContent = (i > 0 ? 'Approximate area · ' : '') + 'lat ' + pos[t].lat + ' · lng ' + pos[t].lng + (i > 0 ? ' — click “Pin” to adjust' : '');
+          update(); return true;
+        }
+        return new Promise(function (res) { setTimeout(res, 800); }).then(function () { return attempt(i + 1); });
+      });
+    }
+    return attempt(0).catch(function () {
+      h.className = 'hint err'; h.textContent = 'Can’t locate right now — try “Pin”.'; return false;
+    });
+  }
+
+  // ---------- Pin on map ----------
+  var map = null, marker = null, pinT = null, pinPos = null;
+  function setMarker(ll) {
+    pinPos = { lat: +(+ll.lat).toFixed(6), lng: +(+ll.lng).toFixed(6) };
+    if (marker) marker.setLatLng(ll);
+    else {
+      marker = L.marker(ll, { draggable: true }).addTo(map);
+      marker.on('dragend', function () { var p = marker.getLatLng(); pinPos = { lat: +p.lat.toFixed(6), lng: +p.lng.toFixed(6) }; $('pinCoord').textContent = 'lat ' + pinPos.lat + ' · lng ' + pinPos.lng; });
+    }
+    $('pinCoord').textContent = 'lat ' + pinPos.lat + ' · lng ' + pinPos.lng;
+  }
+  function openPin(t) {
+    if (typeof L === 'undefined') { $('msg').className = 'msg err'; $('msg').textContent = 'Map failed to load (check internet).'; return; }
+    pinT = t; pinPos = null;
+    $('pinTitle').textContent = t === 'p' ? 'Pin pickup location' : 'Pin drop-off location';
+    $('pinCoord').textContent = 'No pin yet';
+    $('pinModal').hidden = false;
+    var other = pos[t === 'p' ? 'd' : 'p'];
+    var start = pos[t] || other || { lat: 13.7563, lng: 100.5018 };
+    var zoom = pos[t] ? 17 : (other ? 13 : 11);
+    if (!map) {
+      map = L.map('pinMap').setView([start.lat, start.lng], zoom);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+      map.on('click', function (e) { setMarker(e.latlng); });
+    } else {
+      map.setView([start.lat, start.lng], zoom);
+    }
+    if (marker) { map.removeLayer(marker); marker = null; }
+    if (pos[t]) setMarker({ lat: pos[t].lat, lng: pos[t].lng });
+    setTimeout(function () { map.invalidateSize(); }, 80);
+  }
+  function closePin() { $('pinModal').hidden = true; }
+  document.querySelectorAll('.pin').forEach(function (b) { b.addEventListener('click', function () { openPin(b.dataset.pin); }); });
+  $('pinCancel').addEventListener('click', closePin);
+  $('pinModal').addEventListener('click', function (e) { if (e.target === this) closePin(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePin(); });
+  $('pinOk').addEventListener('click', function () {
+    if (!pinPos) { $('pinCoord').textContent = 'Click the map to place a pin first.'; return; }
+    pos[pinT] = { lat: pinPos.lat, lng: pinPos.lng };
+    var h = $(pinT + 'h'); h.className = 'hint ok'; h.textContent = 'Pinned · lat ' + pos[pinT].lat + ' · lng ' + pos[pinT].lng;
+    update(); closePin();
+  });
+
+  document.querySelectorAll('.loc').forEach(function (b) { b.addEventListener('click', function () { geocode(b.dataset.t); }); });
+  [['pickup', 'p'], ['dropoff', 'd']].forEach(function (x) {
+    $(x[0]).addEventListener('input', function () { pos[x[1]] = null; $(x[1] + 'h').textContent = ''; update(); });
+  });
+  $('recipient').addEventListener('input', update);
+  $('rphone').addEventListener('input', function () { this.value = this.value.replace(/[^\d+]/g, ''); });
+  document.querySelectorAll('input[name=size],input[name=method]').forEach(function (r) { r.addEventListener('change', update); });
+
+  // ดึงราคาจากตาราง pricing_rule (ไม่ต้องล็อกอิน)
+  fetch(API + '?a=init', { credentials: 'same-origin' })
+    .then(readJson)
+    .then(function (j) {
+      if (j.error) { say(j.error, 'err'); return; }
+      rules = j.rules;
+      ['S', 'M', 'L'].forEach(function (s) { if (rules[s]) $('f' + s).textContent = 'from ' + money(+rules[s].base_fee); });
+      update();
+    })
+    .catch(function () { say('Can’t reach the server.', 'err'); });
+
+  var need = ['pickup', 'dropoff', 'recipient', 'rphone'];
+
+  $('confirm').addEventListener('click', function () {
+    need.forEach(function (id) { $(id).classList.remove('bad'); });
+    var bad = need.filter(function (id) { return !$(id).value.trim(); });
+    if (!bad.length && !/^\+?\d{9,12}$/.test($('rphone').value)) bad = ['rphone'];
+    if (bad.length) {
+      bad.forEach(function (id) { $(id).classList.add('bad'); });
+      $(bad[0]).focus();
+      say($(bad[0]).id === 'rphone' && $('rphone').value ? 'Enter a valid receiver phone number.' : 'Please fill in both addresses, receiver name and phone.', 'err');
+      return;
+    }
+    var btn = $('confirm'); btn.disabled = true; say('Checking addresses…');
+    Promise.all([pos.p ? true : geocode('p'), pos.d ? true : geocode('d')]).then(function (ok) {
+      if (!ok[0] || !ok[1]) { say('Could not locate one of the addresses — use “Pin” to place it on the map.', 'err'); btn.disabled = false; return; }
+      say('Saving…');
+      return fetch(API + '?a=create', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pickup_address: $('pickup').value.trim(), pickup_lat: pos.p.lat, pickup_lng: pos.p.lng,
+          dropoff_address: $('dropoff').value.trim(), dropoff_lat: pos.d.lat, dropoff_lng: pos.d.lng,
+          receiver_name: $('recipient').value.trim(), receiver_phone: $('rphone').value,
+          size: checked('size'), method: checked('method')
+        })
+      }).then(readJson)
+        .then(function (j) {
+          if (j.error) {
+            say(j.error, 'err');
+            if (j.login) setTimeout(function () { location.href = 'login.html?role=customer'; }, 1200);
+            return;
+          }
+          say('Order placed. Tracking no. ' + j.tracking_no + ' · total ' + money(j.total_price) + ' — going to payment…', 'ok');
+          btn.disabled = true;
+          setTimeout(function () { location.href = 'payment.html?id=' + j.parcel_id; }, 1200);
+          return 'redirect';
+        })
+        .catch(function () { say('Can’t reach the server.', 'err'); })
+        .then(function (x) { if (x !== 'redirect') btn.disabled = false; });
+    });
+  });
+
+  // ---------- My orders: รายการพัสดุของลูกค้า -> ปุ่ม Pay / Track ----------
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function statusLabel(s) {
+    s = String(s || '').toLowerCase();
+    if (/deliver(ed)?$|complete|done/.test(s) && !/ing$/.test(s)) return 'Delivered';
+    if (/transit|way|ship|pick|delivering/.test(s)) return 'On the way';
+    if (/accept|assign/.test(s)) return 'Rider accepted';
+    return 'Waiting for a rider';
+  }
+  function loadOrders() {
+    fetch(API + '?a=list', { credentials: 'same-origin' }).then(readJson).then(function (j) {
+      if (j.error || !j.orders) return;               // ยังไม่ล็อกอิน -> ซ่อนส่วนนี้
+      $('ordList').innerHTML = j.orders.length ? j.orders.map(function (o) {
+        var unpaid = o.pay_status !== 'paid' && o.method !== 'cash', lbl = statusLabel(o.status);
+        var chip = unpaid ? '<span class="chip wait">Awaiting payment</span>'
+                          : '<span class="chip' + (lbl === 'Delivered' ? ' ok' : '') + '">' + lbl + '</span>';
+        return '<div class="ord"><div><span class="t">' + esc(o.tracking_no) + '</span><small>' +
+               esc(o.receiver_name) + ' · ' + esc(o.created_at) + '</small></div>' +
+               '<div>' + chip + '<small>' + money(o.amount) + '</small></div>' +
+               '<a class="btn" href="' + (unpaid ? 'payment' : 'tracking') + '.html?id=' + o.parcel_id + '">' +
+               (unpaid ? 'Pay' : 'Track') + '</a></div>';
+      }).join('') : '<p class="hint">No orders yet.</p>';
+      $('orders').hidden = false;
+      if (location.hash === '#orders') $('orders').scrollIntoView();   // มาจากลิงก์ "Back to my orders"
+    }).catch(function () {});
+  }
+  loadOrders();
+
+  // ---------- Header: Sign in -> Sign out เมื่อล็อกอินแล้ว ----------
+  (function () {
+    var link = $('authLink');
+    fetch('../api/api.php?a=me', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r || r.guest) return;
+        link.textContent = 'Sign out';
+        link.href = '#';
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          fetch('../api/api.php?a=logout', { credentials: 'same-origin' })
+            .finally(function () { location.href = 'index.html'; });
+        });
+      })
+      .catch(function () {});
+  })();
+
+  update();
+})();
+</script>
+</body>
+</html>

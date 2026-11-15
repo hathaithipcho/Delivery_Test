@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rider · Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Pinyon+Script&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* โทนสีจากรูปอ้างอิง: FBF5F7 · FFFFFF · EEEBED · F8F7F8 · FEFBFC + ชมพู/เงินจาก payment.html */
+:root{
+  --blush:#fbf5f7; --white:#fff; --mist:#eeebed; --fog:#f8f7f8; --snow:#fefbfc;
+  --ink:#3a3532; --muted:#7d737a; --pink:#d9327f; --rose:#f3c9da; --soft:#fdeef3;
+  --line:#e6dfe3; --ok:#4e7a5a; --err:#b4475f; --silver:#a9afbd;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--ink);padding:0 18px 56px;
+  font-family:"Playfair Display","Noto Serif Thai",Georgia,serif;font-size:15px;line-height:1.65;
+  background:url("../images/bg2.png") center/cover fixed no-repeat,var(--blush)}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto}
+
+/* ---------- แถบบน ---------- */
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:20px 0 6px}
+.logo{text-decoration:none;font-size:30px;font-weight:500;line-height:1;letter-spacing:.02em;
+  color:#9aa4b8;background:linear-gradient(100deg,#8a94aa 0%,#dde2ec 28%,#98a2b6 52%,#e3e7f0 76%,#8a94aa 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 0 rgba(110,120,140,.35))}
+.logo b{font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* ---------- ทักทาย (จุดเด่นของหน้า) ---------- */
+.hero{padding:26px 0 6px}
+.hero .hello{font:400 46px/1 "Pinyon Script",cursive;color:var(--pink);margin:0}
+.hero h1{font-weight:400;font-size:clamp(30px,5vw,44px);line-height:1.15;margin:2px 0 0;letter-spacing:.01em}
+.hero .muted{margin:4px 0 0}
+.muted{color:var(--muted);font-size:14px}
+
+/* ---------- การ์ดแบบกระจกฝ้า ---------- */
+.card,.stats div,.panel{
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.95);outline:1px solid var(--line);outline-offset:-2px;
+  border-radius:20px;box-shadow:0 10px 24px -12px rgba(120,50,90,.28)}
+.card{padding:16px 18px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0 4px}
+.stats div{padding:16px 18px}
+.stats b{display:block;font:500 28px/1.2 "Playfair Display",serif;color:var(--ink)}
+.stats small{color:var(--muted);font-size:13px}
+
+/* ---------- หัวข้อ ---------- */
+h2{display:flex;align-items:center;gap:14px;font-weight:400;font-size:23px;margin:0 0 12px}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--silver),transparent)}
+section{min-width:0}
+.cols{display:grid;gap:30px 28px;margin-top:30px;grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"route" "veh" "rat"}
+.s-route{grid-area:route}.s-veh{grid-area:veh}.s-rat{grid-area:rat}
+@media(min-width:900px){
+  .cols{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);
+    grid-template-areas:"route veh" "route rat";align-items:start}
+}
+
+/* ---------- ป้ายสถานะ ---------- */
+.pill{display:inline-block;padding:1px 12px;border-radius:99px;border:1px solid var(--line);
+  font-size:13px;background:var(--snow);color:var(--ink)}
+.pill.st{display:inline-flex;align-items:center;gap:7px;padding:2px 13px 2px 11px;letter-spacing:.02em}
+.pill.st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+/* เขียว = เสร็จ/พร้อม · ชมพู = กำลังทำ · ม่วงเงิน = รับของแล้ว/ระหว่างทาง · เทาเงิน = รอ/ออฟไลน์ */
+.pill.available,.pill.delivered,.pill.completed{background:#eef6f0;border-color:#bfd8c5;color:var(--ok)}
+.pill.in_progress,.pill.delivering{background:var(--soft);border-color:var(--rose);color:#a8286c}
+.pill.picked_up,.pill.in_transit{background:#eff0f8;border-color:#cfd5e8;color:#586285}
+.pill.planned,.pill.pending,.pill.inactive{background:var(--fog);border-color:#d9dbe3;color:#6c7282}
+.pill.cancelled{background:#fbeff1;border-color:#ecc8cf;color:var(--err)}
+/* จุดกะพริบเบาๆ เฉพาะสถานะที่กำลังทำงานอยู่ */
+.pill.in_progress::before,.pill.delivering::before{animation:live 1.8s ease-in-out infinite}
+@keyframes live{50%{opacity:.3}}
+
+/* ---------- ปุ่มสีเงิน (เหมือน payment.html) ---------- */
+button{font:inherit;font-size:14px;letter-spacing:.04em;padding:8px 20px;border-radius:24px;
+  border:1px solid var(--silver);color:#b0205f;cursor:pointer;
+  background:linear-gradient(180deg,#ffffff 0%,#eceef3 42%,#cfd3dc 58%,#e6e9ef 100%);
+  text-shadow:0 1px 0 rgba(255,255,255,.85);
+  box-shadow:0 8px 14px -6px rgba(120,50,90,.26),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3);
+  transition:filter .2s,box-shadow .2s,transform .2s}
+button:hover{filter:brightness(1.04);
+  box-shadow:0 10px 18px -6px rgba(120,50,90,.32),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(95,105,125,.3)}
+button:active{transform:translateY(1px);
+  box-shadow:0 4px 8px -4px rgba(120,50,90,.25),inset 0 2px 3px rgba(95,105,125,.35)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+button:disabled{opacity:.6;cursor:wait}
+button.pri{font-weight:600}
+button.alt{color:#3a3f4a}
+
+/* ---------- ช่องกรอก ---------- */
+input,select{font:inherit;font-size:15px;color:var(--ink);padding:9px 12px;border:1px solid #e3cdd8;
+  border-radius:12px;background:var(--snow)}
+input::placeholder{color:#a99fa6}
+input[type=checkbox]{accent-color:var(--pink);width:17px;height:17px;padding:0;margin-top:5px}
+label{font-size:14px;color:var(--muted)}
+
+/* ---------- เส้นทาง ---------- */
+.stop{border-top:1px dashed #cfc6cc;padding:14px 0}
+.stop:first-of-type{border-top:0}
+.stop a{color:var(--pink);text-underline-offset:3px}
+.pick{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px dashed #cfc6cc;cursor:pointer}
+.pick.off{opacity:.45;cursor:not-allowed}
+#msg{min-height:24px;margin:8px 0 0;color:var(--err);font-size:14px}
+.empty{padding:20px 16px;text-align:center;color:var(--muted);border:1px dashed #cfc6cc;border-radius:16px;background:rgba(255,255,255,.5)}
+
+@media(max-width:560px){body{padding:0 12px 44px}.hero .hello{font-size:38px}.card{padding:14px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style></head><body><div class="wrap">
+
+<header class="top">
+  <a class="logo" href="index.html">Deli<b>very</b></a>
+  <div class="row"><span class="pill" id="st"></span><button id="tg"></button><button id="out" class="alt">Sign out</button></div>
+</header>
+
+<section class="hero">
+  <p class="hello">Hello,</p>
+  <h1 id="hi">Rider</h1>
+  <p class="muted" id="ph"></p>
+</section>
+<p id="msg" role="alert"></p>
+<div class="stats" id="stats"></div>
+
+<div class="cols">
+  <section class="s-route"><h2>Current route</h2><div id="route"></div></section>
+  <section class="s-veh"><h2>My vehicles</h2><div id="veh"></div></section>
+  <section class="s-rat"><h2>Recent ratings</h2><div id="rat"></div></section>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const T=s=>s?String(s).slice(0,16).replace('T',' '):'';
+const RANK={S:1,M:2,L:3};
+/* ชื่อสถานะที่อ่านง่าย แทน in_progress / picked_up */
+const LBL={available:'Online',inactive:'Offline',delivering:'Delivering',planned:'Planned',in_progress:'In progress',
+  completed:'Completed',cancelled:'Cancelled',pending:'Waiting for pickup',picked_up:'Picked up',in_transit:'On the way',delivered:'Delivered'};
+const L=s=>LBL[s]||String(s).replace(/_/g,' ');
+/* path ต้องเป็น ../api/ เหมือนหน้าอื่น (rider.html อยู่ในโฟลเดอร์ html/) */
+async function api(a,b){
+  const r=await fetch('../api/api.php?a='+a,Object.assign({credentials:'same-origin'},b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{}));
+  const t=await r.text();let j;
+  try{j=JSON.parse(t)}catch(e){j={error:'Server error (HTTP '+r.status+') — ตอบกลับไม่ใช่ JSON ตรวจสอบว่ามี api/rider.php และเปิดผ่าน PHP server'}}
+  j._s=r.status;return j;
+}
+const gps=()=>new Promise(r=>navigator.geolocation?navigator.geolocation.getCurrentPosition(
+  p=>r({lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6)}),()=>r({}),{timeout:3000}):r({}));
+let D;
+async function act(a,body,btn,withGps){
+  if(btn)btn.disabled=true;$('#msg').textContent='';
+  if(withGps)Object.assign(body,await gps());
+  try{const r=await api(a,body);if(r.error)$('#msg').textContent=r.error;}catch(e){$('#msg').textContent='Can’t reach the server'}
+  await load();
+}
+async function load(){
+  try{D=await api('r_home')}catch(e){$('#msg').textContent='Can’t reach the server';return}
+  if(D._s===401){location.href='login.html?role=rider';return}
+  if(D.error){$('#msg').textContent=D.error;return}
+  render();
+}
+function render(){
+  const m=D.me,s=D.stats;
+  $('#hi').textContent=m.name;$('#ph').textContent=m.phone;
+  $('#st').textContent=L(m.status);$('#st').className='pill st '+m.status;
+  const tg=$('#tg');tg.hidden=m.status==='delivering';
+  tg.textContent=m.status==='available'?'Go offline':'Go online';
+  tg.onclick=()=>act('r_status',{status:m.status==='available'?'inactive':'available'},tg,true);
+  $('#stats').innerHTML=
+    `<div><b>${m.rating_avg==null?'–':'★ '+m.rating_avg}</b><small>Average rating</small></div>
+     <div><b>${s.delivered}</b><small>Parcels delivered</small></div>
+     <div><b>${(+s.km).toFixed(1)}</b><small>Total km (completed routes)</small></div>
+     <div><b>฿${(+s.value).toFixed(2)}</b><small>Value of parcels delivered</small></div>`;
+  renderRoute();renderVeh();
+  $('#rat').innerHTML=D.ratings.length?D.ratings.map(r=>
+    `<div class="card"><b style="color:var(--pink)">${'★'.repeat(r.star)}${'☆'.repeat(5-r.star)}</b> <span class="muted">${T(r.created_at)}</span><br>${esc(r.comment)||'<span class="muted">No comment</span>'}</div>`).join('')
+    :'<p class="empty">No ratings yet. They will show up here after your first delivery.</p>';
+}
+function renderVeh(){
+  const v=D.vehicles;
+  $('#veh').innerHTML=(v.length?v.map(x=>`<div class="card row"><b>${esc(x.plate_no)}</b> ${esc(x.type)}
+    <span class="pill">max size ${x.max_size}</span>${x.is_active?'':'<span class="pill st inactive">Inactive</span>'}</div>`).join('')
+    :'<p class="empty">Add a vehicle before creating a route.</p>')+
+  `<div class="card row"><input id="vt" placeholder="Type (e.g. motorcycle)" maxlength="30">
+   <input id="vp" placeholder="Plate no." maxlength="20">
+   <select id="vs"><option>S</option><option selected>M</option><option>L</option></select>
+   <button id="va">Add vehicle</button></div>`;
+  $('#va').onclick=e=>act('r_vehicle_add',{type:$('#vt').value,plate_no:$('#vp').value,max_size:$('#vs').value},e.target);
+}
+function renderRoute(){
+  const r=D.routes.find(x=>x.status==='planned'||x.status==='in_progress')||D.routes[0];
+  const live=r&&(r.status==='planned'||r.status==='in_progress');
+  let h='';
+  if(r){
+    const st=D.stops.filter(x=>x.route_id===r.route_id);
+    const veh=D.vehicles.find(x=>x.vehicle_id===r.vehicle_id);
+    h+=`<div class="card"><div class="row"><b>Route #${r.route_id}</b><span class="pill st ${r.status}">${L(r.status)}</span>
+      <span class="muted">${String(r.route_date).slice(0,10)}${veh?' · '+esc(veh.plate_no):''}${r.started_at?' · started '+T(r.started_at):''}${r.ended_at?' · ended '+T(r.ended_at):''}${r.status==='completed'?' · '+r.total_km+' km':''}</span>
+      ${r.status==='planned'?(D.me.status==='available'?`<button class="pri" id="rs">Start route</button>`:'<span class="muted">Go online to start</span>'):''}</div>`+
+      st.map(x=>`<div class="stop"><div class="row"><b>Stop ${x.stop_seq} · ${esc(x.tracking_no)}</b>
+        <span class="pill st ${x.status}">${L(x.status)}</span><span class="pill">size ${x.size}</span>
+        <span class="muted">${x.distance_km} km · ฿${(+x.total_price).toFixed(2)}</span></div>
+        <div class="muted">Pick up: ${esc(x.pickup_address)} <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${x.pickup_lat},${x.pickup_lng}">map</a></div>
+        <div class="muted">Drop off: ${esc(x.dropoff_address)} <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${x.dropoff_lat},${x.dropoff_lng}">map</a></div>
+        <div class="muted">Receiver: ${esc(x.receiver_name)} · <a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></div>
+        <div class="row" style="margin-top:8px">${
+          x.delivery_at?`<span class="muted">Delivered ${T(x.delivery_at)}</span>${x.proof_photo_url?` <a target="_blank" rel="noopener" href="${esc(x.proof_photo_url)}">proof photo</a>`:''}`
+          :r.status!=='in_progress'?''
+          :!x.picked_at?`<button data-pk="${x.parcel_id}">Mark picked up</button>`
+          :`<input data-ph="${x.parcel_id}" placeholder="Proof photo URL (optional)" style="min-width:240px;flex:1"><button class="pri" data-dl="${x.parcel_id}">Mark delivered</button>`}</div></div>`).join('')+`</div>`;
+  }
+  if(!live)h+=createForm();
+  $('#route').innerHTML=h;
+  const rs=$('#rs');if(rs)rs.onclick=e=>act('r_start',{route_id:r.route_id},e.target);
+  document.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>act('r_pickup',{route_id:r.route_id,parcel_id:+b.dataset.pk},b,true));
+  document.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>act('r_deliver',{route_id:r.route_id,parcel_id:+b.dataset.dl,
+    photo:document.querySelector(`[data-ph="${b.dataset.dl}"]`).value},b,true));
+  const cr=$('#cr');if(cr){cr.onclick=e=>act('r_route_create',{vehicle_id:+$('#cv').value,
+    parcel_ids:[...document.querySelectorAll('.cp:checked')].map(c=>+c.value)},e.target);
+    $('#cv').onchange=syncSizes;syncSizes();}
+}
+function createForm(){
+  if(D.me.status!=='available')return '<p class="empty">You are offline. Press “Go online” to accept jobs.<br>ออฟไลน์อยู่ กดปุ่ม Go online ก่อนรับงาน</p>';
+  const av=D.vehicles.filter(v=>v.is_active);
+  if(!av.length)return '<p class="empty">Add an active vehicle to plan a route.</p>';
+  return `<div class="card"><b>Plan a new route</b>
+    <div class="row" style="margin:10px 0"><label for="cv">Vehicle</label><select id="cv">${av.map(v=>`<option value="${v.vehicle_id}" data-s="${v.max_size}">${esc(v.plate_no)} (max ${v.max_size})</option>`).join('')}</select></div>
+    ${D.open.length?D.open.map(p=>`<label class="pick" data-size="${p.size}"><input type="checkbox" class="cp" value="${p.parcel_id}">
+      <span><b style="color:var(--ink)">${esc(p.tracking_no)}</b> <span class="pill">size ${p.size}</span> <span class="muted">${p.distance_km} km · ฿${(+p.total_price).toFixed(2)}</span><br>
+      <span class="muted">${esc(p.pickup_address)} → ${esc(p.dropoff_address)}</span></span></label>`).join('')
+      :'<p class="empty">No pending parcels right now.</p>'}
+    <button class="pri" id="cr" style="margin-top:12px">Create route</button></div>`;
+}
+function syncSizes(){
+  const max=RANK[$('#cv').selectedOptions[0].dataset.s];
+  document.querySelectorAll('.pick').forEach(l=>{const bad=RANK[l.dataset.size]>max;
+    l.classList.toggle('off',bad);const c=l.querySelector('input');c.disabled=bad;if(bad)c.checked=false;});
+}
+$('#out').onclick=async()=>{await api('logout',{});location.href='index.html'};
+load();
+</script></body></html>
